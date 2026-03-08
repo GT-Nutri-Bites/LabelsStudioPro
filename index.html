@@ -69,6 +69,10 @@
   --lbl-primary: #0C1B2E;
   --lbl-accent:  #0A7E8C;
   --lbl-accent-l:#EBF8FA;
+  
+  /* Font customization vars */
+  --lbl-font-family: 'IBM Plex Sans', sans-serif;
+  --lbl-font-scale: 1;
 }
 
 html,body{height:100%;font-size:15px;-webkit-font-smoothing:antialiased;}
@@ -434,42 +438,43 @@ select{
 .lr{
   display:flex;align-items:center;justify-content:center;
   text-align:center;overflow:hidden;flex-shrink:0;padding:0 6px;
+  font-family:var(--lbl-font-family);
 }
 
 .lr-biz{
   background:var(--lbl-primary);color:#fff;
-  font-family:var(--serif);font-size:8.5px;height:23px;
+  font-family:var(--lbl-font-family);font-size:calc(8.5px * var(--lbl-font-scale));height:23px;
   border-bottom:2px solid var(--lbl-accent);letter-spacing:.06em;
 }
 .lr-product{
   background:#fff;color:var(--lbl-primary);
-  font-weight:700;font-size:7.5px;height:22px;
+  font-weight:700;font-size:calc(7.5px * var(--lbl-font-scale));height:22px;
   border-bottom:1px solid #EEF2F5;line-height:1.25;
 }
 .lr-dates{
   background:var(--lbl-accent-l);color:var(--ink-soft);
-  font-size:6px;height:19px;border-bottom:1px solid #D5EDED;gap:8px;
+  font-size:calc(6px * var(--lbl-font-scale));height:19px;border-bottom:1px solid #D5EDED;gap:8px;
 }
 .lr-dates .mfg{color:var(--teal-d);font-weight:600;}
 .lr-dates .exp{color:var(--red);font-weight:700;}
 .lr-batch{
   background:#fff;color:var(--teal-d);
-  font-size:6px;height:16px;
+  font-size:calc(6px * var(--lbl-font-scale));height:16px;
   font-family:var(--mono);border-bottom:1px solid #EEF2F5;
   letter-spacing:.03em;
 }
 .lr-web{
   background:var(--lbl-primary);color:rgba(255,255,255,.8);
-  font-size:5.5px;height:14px;letter-spacing:.04em;
+  font-size:calc(5.5px * var(--lbl-font-scale));height:14px;letter-spacing:.04em;
 }
 .lr-company{
-  background:#F8FAFB;color:var(--slate);font-size:5.5px;
+  background:#F8FAFB;color:var(--slate);font-size:calc(5.5px * var(--lbl-font-scale));
   height:22px;flex-direction:column;justify-content:center;
   gap:1.5px;border-bottom:1px solid #EEF2F5;
   line-height:1.3;padding:0 5px;text-align:center;
 }
 .lr-contact{
-  background:#F8FAFB;color:var(--slate-l);font-size:5px;
+  background:#F8FAFB;color:var(--slate-l);font-size:calc(5px * var(--lbl-font-scale));
   height:10px;font-family:var(--mono);letter-spacing:.02em;
   flex:1;border-top:none;
 }
@@ -598,17 +603,17 @@ select{
 .a4-label{
   width:144px;height:96px;
   display:flex;flex-direction:column;overflow:hidden;
-  position:relative;font-family:var(--font);
+  position:relative;font-family:var(--lbl-font-family);
 }
 
 /* A4 label sizing */
-.a4-label .lr-biz   {font-size:5.5px;height:15px;}
-.a4-label .lr-product{font-size:5px;height:14px;}
-.a4-label .lr-dates  {font-size:3.8px;height:11px;}
-.a4-label .lr-batch  {font-size:3.6px;height:10px;}
-.a4-label .lr-web    {font-size:3.6px;height:9px;}
-.a4-label .lr-company{font-size:3.2px;height:14px;}
-.a4-label .lr-contact{font-size:3px;height:8px;}
+.a4-label .lr-biz   {font-size:calc(5.5px * var(--lbl-font-scale));height:15px;}
+.a4-label .lr-product{font-size:calc(5px * var(--lbl-font-scale));height:14px;}
+.a4-label .lr-dates  {font-size:calc(3.8px * var(--lbl-font-scale));height:11px;}
+.a4-label .lr-batch  {font-size:calc(3.6px * var(--lbl-font-scale));height:10px;}
+.a4-label .lr-web    {font-size:calc(3.6px * var(--lbl-font-scale));height:9px;}
+.a4-label .lr-company{font-size:calc(3.2px * var(--lbl-font-scale));height:14px;}
+.a4-label .lr-contact{font-size:calc(3px * var(--lbl-font-scale));height:8px;}
 
 .a4-border{position:absolute;inset:0;border:1px solid #E0E4E8;pointer-events:none;}
 
@@ -766,7 +771,7 @@ select{
 ═══════════════════════════════════════════════════════════ */
 @media print{
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
-  html,body{background:#fff;}
+  html,body{background:#fff;margin:0;padding:0;}
   .topbar,.sidebar,.preview-tabs,.zoom-bar,.stats-bar,
   .tab-content:not(.active),.sheet-header,.overlay,.toast{display:none!important;}
   .workspace,.preview-panel,.tab-content.active{display:block!important;overflow:visible!important;}
@@ -777,14 +782,27 @@ select{
   .a4-sheet{
     box-shadow:none!important;width:210mm!important;
     min-height:297mm!important;border:none!important;
-    page-break-after:always;
+    page-break-after:always;margin:0!important;
   }
   .a4-inner{
     padding:8.7mm 9.9mm!important;
     grid-template-columns:repeat(var(--print-cols,5),1fr)!important;
     grid-auto-rows:25.4mm!important;
+    gap:0!important;
   }
-  .a4-label{width:38.1mm!important;height:25.4mm!important;}
+  .a4-label{
+    width:38.1mm!important;height:25.4mm!important;
+    font-family:var(--lbl-font-family)!important;
+  }
+  /* Print-specific font sizes - scaled for 38.1mm x 25.4mm label */
+  .a4-label .lr-biz   {font-size:calc(2.2mm * var(--lbl-font-scale))!important;height:6mm!important;}
+  .a4-label .lr-product{font-size:calc(2mm * var(--lbl-font-scale))!important;height:5.5mm!important;}
+  .a4-label .lr-dates  {font-size:calc(1.5mm * var(--lbl-font-scale))!important;height:4.3mm!important;}
+  .a4-label .lr-batch  {font-size:calc(1.4mm * var(--lbl-font-scale))!important;height:4mm!important;}
+  .a4-label .lr-web    {font-size:calc(1.4mm * var(--lbl-font-scale))!important;height:3.5mm!important;}
+  .a4-label .lr-company{font-size:calc(1.3mm * var(--lbl-font-scale))!important;height:5.5mm!important;}
+  .a4-label .lr-contact{font-size:calc(1.2mm * var(--lbl-font-scale))!important;height:3.2mm!important;}
+  .a4-label .lr{font-family:var(--lbl-font-family)!important;}
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -889,6 +907,27 @@ select{
             <!-- injected by JS -->
           </div>
           <div class="field-hint">Sets the header & accent colour on your labels</div>
+        </div>
+
+        <div class="field">
+          <div class="field-label">Font Family</div>
+          <select id="f-font-family" onchange="applyFontFamily(this.value)">
+            <option value="'IBM Plex Sans', sans-serif">IBM Plex Sans (Default)</option>
+            <option value="'Playfair Display', serif">Playfair Display (Serif)</option>
+            <option value="'IBM Plex Mono', monospace">IBM Plex Mono (Monospace)</option>
+            <option value="Arial, sans-serif">Arial</option>
+            <option value="'Times New Roman', serif">Times New Roman</option>
+            <option value="Georgia, serif">Georgia</option>
+            <option value="Verdana, sans-serif">Verdana</option>
+            <option value="'Courier New', monospace">Courier New</option>
+          </select>
+          <div class="field-hint">Choose the font style for label text</div>
+        </div>
+
+        <div class="field">
+          <div class="field-label">Font Size Scale <span id="font-scale-display" style="font-family:var(--mono);color:var(--teal);">100%</span></div>
+          <input type="range" id="f-font-scale" min="70" max="130" value="100" step="5" oninput="applyFontScale(this.value)" style="width:100%;cursor:pointer;"/>
+          <div class="field-hint">Adjust overall text size (70% - 130%). Use larger for readability or smaller to fit more text.</div>
         </div>
       </div>
 
@@ -1300,6 +1339,29 @@ function applyTheme(idx){
   update();
 }
 
+/* ── Font management ── */
+let fontFamily = "'IBM Plex Sans', sans-serif";
+let fontScale = 1;
+
+function applyFontFamily(family){
+  fontFamily = family;
+  document.documentElement.style.setProperty('--lbl-font-family', family);
+  update();
+}
+
+function applyFontScale(value){
+  const numValue = parseInt(value, 10);
+  if(isNaN(numValue)) return;
+  // Snap to nearest step of 5
+  const snappedValue = Math.round(numValue / 5) * 5;
+  const clampedValue = Math.max(70, Math.min(130, snappedValue));
+  fontScale = clampedValue / 100;
+  document.documentElement.style.setProperty('--lbl-font-scale', fontScale);
+  if(g('font-scale-display')) g('font-scale-display').textContent = clampedValue + '%';
+  if(g('f-font-scale')) g('f-font-scale').value = clampedValue;
+  update();
+}
+
 /* ── Build label HTML ── */
 function labelHTML(){
   const biz   = esc(v('f-biz'))    || 'Business Name';
@@ -1488,6 +1550,11 @@ function resetForm(){
   applyTheme(0);
   setCut(document.querySelector('.cut-opt[data-val="cut-dashed"]'));
   setZoom(250);
+  // Reset font settings
+  if(g('f-font-family')) g('f-font-family').value = "'IBM Plex Sans', sans-serif";
+  applyFontFamily("'IBM Plex Sans', sans-serif");
+  if(g('f-font-scale')) g('f-font-scale').value = 100;
+  applyFontScale(100);
   update();
   toast('↺ Reset to sample data');
 }
@@ -1542,6 +1609,8 @@ function getCurrentConfig(){
     lightGuides: g('chk-light')?.checked ?? true,
     showSingleCut: g('chk-show-single')?.checked ?? false,
     zoom: zoom,
+    fontFamily: fontFamily,
+    fontScale: fontScale,
     savedAt: new Date().toISOString()
   };
 }
@@ -1599,6 +1668,20 @@ function applyConfig(config){
   // Zoom
   if(config.zoom !== undefined){
     setZoom(config.zoom);
+  }
+  
+  // Font settings
+  if(config.fontFamily !== undefined){
+    fontFamily = config.fontFamily;
+    if(g('f-font-family')) g('f-font-family').value = fontFamily;
+    applyFontFamily(fontFamily);
+  }
+  if(config.fontScale !== undefined){
+    // Snap to nearest valid step of 5 when loading
+    const rawPercent = Math.round(config.fontScale * 100);
+    const snappedPercent = Math.round(rawPercent / 5) * 5;
+    const clampedPercent = Math.max(70, Math.min(130, snappedPercent));
+    applyFontScale(clampedPercent);
   }
   
   update();
