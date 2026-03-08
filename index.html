@@ -500,6 +500,23 @@ select{
   font-family:var(--lbl-font-family);font-size:calc(8.5px * var(--lbl-font-scale));height:23px;
   border-bottom:2px solid var(--lbl-accent);letter-spacing:.06em;
 }
+.lbl-logo{
+  height:15px;width:auto;margin-right:4px;object-fit:contain;flex-shrink:0;
+  vertical-align:middle;
+}
+.logo-upload-row{
+  display:flex;align-items:center;gap:10px;
+}
+.logo-preview-box{
+  width:60px;height:40px;border:2px dashed var(--border);border-radius:var(--r);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  background:var(--white);overflow:hidden;transition:all .2s;
+  flex-shrink:0;
+}
+.logo-preview-box:hover{border-color:var(--teal);background:var(--teal-bg);}
+.logo-preview-box.has-logo{border-style:solid;border-color:var(--teal-brd);}
+.logo-placeholder{font-size:.65rem;color:var(--slate-l);}
+.logo-upload-actions{display:flex;gap:6px;flex-direction:column;}
 .lr-product{
   background:#fff;color:var(--lbl-primary);
   font-weight:700;font-size:calc(7.5px * var(--lbl-font-scale));height:22px;
@@ -1006,6 +1023,21 @@ select{
           <input type="range" id="f-font-scale" min="70" max="130" value="100" step="5" oninput="applyFontScale(this.value)" style="width:100%;cursor:pointer;"/>
           <div class="field-hint">Adjust overall text size (70% - 130%). Use larger for readability or smaller to fit more text.</div>
         </div>
+        <div class="field">
+          <div class="field-label">Brand Logo <span style="font-weight:400;color:var(--slate-l);font-size:.7rem;">(optional)</span></div>
+          <div class="logo-upload-row">
+            <div class="logo-preview-box" id="logo-preview-box" onclick="g('logo-input').click()">
+              <img id="logo-preview-img" src="" alt="" style="display:none;max-width:100%;max-height:100%;object-fit:contain;"/>
+              <span id="logo-placeholder" class="logo-placeholder">+ Upload</span>
+            </div>
+            <div class="logo-upload-actions">
+              <button class="btn btn-solid" style="font-size:.7rem;padding:5px 12px;" onclick="g('logo-input').click()">📷 Choose</button>
+              <button class="btn btn-solid" style="font-size:.7rem;padding:5px 12px;" onclick="clearLogo()">✕ Remove</button>
+            </div>
+          </div>
+          <input type="file" id="logo-input" accept="image/*" style="display:none" onchange="handleLogoUpload(event)"/>
+          <div class="field-hint">Small logo shown on label header · PNG or JPG recommended (max 200KB)</div>
+        </div>
       </div>
 
       <div class="sec-divider"></div>
@@ -1481,6 +1513,50 @@ function applyFontScale(value){
   update();
 }
 
+/* ── Logo management ── */
+let logoDataUrl = '';
+
+function handleLogoUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+
+  if(file.size > 200 * 1024){
+    toast('❌ Logo too large (max 200KB)', 'red');
+    return;
+  }
+
+  if(!file.type.startsWith('image/')){
+    toast('❌ Please select an image file', 'red');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e){
+    logoDataUrl = e.target.result;
+    const img = g('logo-preview-img');
+    const placeholder = g('logo-placeholder');
+    const box = g('logo-preview-box');
+    if(img){ img.src = logoDataUrl; img.style.display = 'block'; }
+    if(placeholder) placeholder.style.display = 'none';
+    if(box) box.classList.add('has-logo');
+    update();
+    toast('📷 Logo uploaded', 'copper');
+  };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+}
+
+function clearLogo(){
+  logoDataUrl = '';
+  const img = g('logo-preview-img');
+  const placeholder = g('logo-placeholder');
+  const box = g('logo-preview-box');
+  if(img){ img.src = ''; img.style.display = 'none'; }
+  if(placeholder) placeholder.style.display = '';
+  if(box) box.classList.remove('has-logo');
+  update();
+}
+
 /* ── Build label HTML ── */
 function labelHTML(){
   const biz   = esc(v('f-biz'))    || 'Business Name';
@@ -1496,7 +1572,7 @@ function labelHTML(){
   const wt    = esc(v('f-weight')) || '';
   const crops = `<span class="cm cm-tl"></span><span class="cm cm-tr"></span><span class="cm cm-bl"></span><span class="cm cm-br"></span>`;
   return `${crops}
-    <div class="lr lr-biz">${biz}</div>
+    <div class="lr lr-biz">${logoDataUrl ? '<img src="'+logoDataUrl+'" class="lbl-logo" alt=""/>' : ''}${biz}</div>
     <div class="lr lr-product">${prod}${wt ? ' · '+wt : ''}</div>
     <div class="lr lr-dates"><span class="mfg">Mfg:&nbsp;${mfg}</span>&nbsp;|&nbsp;<span class="exp">Exp:&nbsp;${exp}</span></div>
     <div class="lr lr-batch">Batch:&nbsp;${batch}</div>
@@ -1729,6 +1805,7 @@ function resetForm(){
   applyFontFamily("'IBM Plex Sans', sans-serif");
   if(g('f-font-scale')) g('f-font-scale').value = 100;
   applyFontScale(100);
+  clearLogo();
   update();
   toast('↺ Reset to sample data');
 }
@@ -1789,6 +1866,7 @@ function getCurrentConfig(){
     fontScale: fontScale,
     customPrimary: g('custom-primary')?.value || '',
     customAccent: g('custom-accent')?.value || '',
+    logo: logoDataUrl,
     savedAt: new Date().toISOString()
   };
 }
@@ -1869,6 +1947,19 @@ function applyConfig(config){
     const snappedPercent = Math.round(rawPercent / 5) * 5;
     const clampedPercent = Math.max(70, Math.min(130, snappedPercent));
     applyFontScale(clampedPercent);
+  }
+
+  // Logo
+  if(config.logo){
+    logoDataUrl = config.logo;
+    const img = g('logo-preview-img');
+    const placeholder = g('logo-placeholder');
+    const box = g('logo-preview-box');
+    if(img){ img.src = logoDataUrl; img.style.display = 'block'; }
+    if(placeholder) placeholder.style.display = 'none';
+    if(box) box.classList.add('has-logo');
+  } else {
+    clearLogo();
   }
   
   update();
