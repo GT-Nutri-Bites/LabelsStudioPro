@@ -863,7 +863,7 @@ select{
           <span>📥</span> Import
         </button>
       </div>
-      <select class="config-select" id="saved-configs" onchange="loadSelectedConfig()">
+      <select class="config-select" id="saved-configs" onchange="loadSelectedConfig()" aria-label="Load saved configuration">
         <option value="">— Load saved configuration —</option>
       </select>
       <div class="config-hint">Auto-saves to browser storage · Export for backup</div>
@@ -1108,7 +1108,7 @@ select{
         <div class="zoom-value" id="zoom-disp">250%</div>
         <button class="zoom-btn" onclick="adjZoom(+25)" title="Zoom In (+25%)">+</button>
         <input type="range" class="zoom-slider" id="zoom-range" min="50" max="500" value="250" step="25" oninput="setZoom(+this.value)" title="Drag to adjust zoom"/>
-        <span class="zoom-hint">Ctrl+Scroll to zoom · Label actual size: 1.5 in × 1 in</span>
+        <span class="zoom-hint" id="zoom-hint">Ctrl+Scroll to zoom · Label actual size: 1.5 in × 1 in</span>
       </div>
     </div>
 
@@ -1635,7 +1635,7 @@ function updateConfigDropdown(){
     opt.value = name;
     const cfg = configs[name];
     const date = cfg.savedAt ? new Date(cfg.savedAt).toLocaleDateString() : '';
-    opt.textContent = `${name}${date ? ' (' + date + ')' : ''}`;
+    opt.textContent = date ? `${name} (${date})` : name;
     select.appendChild(opt);
   });
 }
@@ -1717,7 +1717,7 @@ function exportConfig(){
   
   const link = document.createElement('a');
   link.href = url;
-  const filename = (v('f-biz') || 'label-config').replace(/[^a-z0-9]/gi, '-').toLowerCase();
+  const filename = (v('f-biz') || 'label-config').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase();
   link.download = `${filename}-${new Date().toISOString().split('T')[0]}.json`;
   document.body.appendChild(link);
   link.click();
@@ -1742,8 +1742,11 @@ function handleFileImport(event){
     try {
       const config = JSON.parse(e.target.result);
       
-      // Validate it's a label config
-      if(!config.business && !config.product){
+      // Validate it's a label config by checking for expected structure
+      const hasExpectedFields = config.hasOwnProperty('business') || 
+                                config.hasOwnProperty('product') || 
+                                config.exportedFrom === 'Label Studio Pro';
+      if(!hasExpectedFields){
         toast('❌ Invalid configuration file', 'red');
         return;
       }
@@ -1771,6 +1774,9 @@ function autoSave(){
 }
 
 /* Load auto-saved state on page load */
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
+const AUTO_SAVE_MAX_DAYS = 7;
+
 function loadAutoSave(){
   try {
     const data = localStorage.getItem(AUTO_SAVE_KEY);
@@ -1780,8 +1786,8 @@ function loadAutoSave(){
       if(config.savedAt){
         const saved = new Date(config.savedAt);
         const now = new Date();
-        const daysDiff = (now - saved) / (1000 * 60 * 60 * 24);
-        if(daysDiff < 7){
+        const daysDiff = (now - saved) / MS_PER_DAY;
+        if(daysDiff < AUTO_SAVE_MAX_DAYS){
           applyConfig(config);
           return true;
         }
@@ -1824,6 +1830,12 @@ if(!loadAutoSave()){
 
 // Apply initial zoom
 setZoom(zoom);
+
+// Update zoom hint for macOS users
+if(navigator.platform.toUpperCase().indexOf('MAC') >= 0){
+  const hint = g('zoom-hint');
+  if(hint) hint.textContent = '⌘+Scroll to zoom · Label actual size: 1.5 in × 1 in';
+}
 </script>
 </body>
 </html>
