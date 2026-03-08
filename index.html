@@ -178,6 +178,7 @@ body{font-family:var(--font);background:var(--ivory);color:var(--ink);display:fl
 }
 .btn:hover::after{background:rgba(255,255,255,.08);}
 .btn:active{transform:scale(.97);}
+.btn:disabled{opacity:.35;cursor:not-allowed;pointer-events:none;}
 
 .btn-ghost{
   background:rgba(255,255,255,.06);color:rgba(255,255,255,.75);
@@ -526,6 +527,13 @@ select{
   gap:1.5px;border-bottom:1px solid #EEF2F5;
   line-height:1.3;padding:0 5px;text-align:center;
 }
+.lr-ingr{
+  background:#FAFAF5;color:var(--slate);
+  font-size:calc(4.2px * var(--lbl-font-scale));height:14px;
+  border-bottom:1px solid #EEF2F5;
+  letter-spacing:.01em;line-height:1.2;
+  text-overflow:ellipsis;white-space:nowrap;
+}
 .lr-contact{
   background:#F8FAFB;color:var(--slate-l);font-size:calc(5px * var(--lbl-font-scale));
   height:10px;font-family:var(--mono);letter-spacing:.02em;
@@ -664,6 +672,7 @@ select{
 .a4-label .lr-product{font-size:calc(5px * var(--lbl-font-scale));height:14px;}
 .a4-label .lr-dates  {font-size:calc(3.8px * var(--lbl-font-scale));height:11px;}
 .a4-label .lr-batch  {font-size:calc(3.6px * var(--lbl-font-scale));height:10px;}
+.a4-label .lr-ingr   {font-size:calc(2.8px * var(--lbl-font-scale));height:9px;}
 .a4-label .lr-web    {font-size:calc(3.6px * var(--lbl-font-scale));height:9px;}
 .a4-label .lr-company{font-size:calc(3.2px * var(--lbl-font-scale));height:14px;}
 .a4-label .lr-contact{font-size:calc(3px * var(--lbl-font-scale));height:8px;}
@@ -852,6 +861,7 @@ select{
   .a4-label .lr-product{font-size:calc(2mm * var(--lbl-font-scale))!important;height:5.5mm!important;}
   .a4-label .lr-dates  {font-size:calc(1.5mm * var(--lbl-font-scale))!important;height:4.3mm!important;}
   .a4-label .lr-batch  {font-size:calc(1.4mm * var(--lbl-font-scale))!important;height:4mm!important;}
+  .a4-label .lr-ingr   {font-size:calc(1.1mm * var(--lbl-font-scale))!important;height:3.5mm!important;}
   .a4-label .lr-web    {font-size:calc(1.4mm * var(--lbl-font-scale))!important;height:3.5mm!important;}
   .a4-label .lr-company{font-size:calc(1.3mm * var(--lbl-font-scale))!important;height:5.5mm!important;}
   .a4-label .lr-contact{font-size:calc(1.2mm * var(--lbl-font-scale))!important;height:3.2mm!important;}
@@ -900,6 +910,8 @@ select{
       <div class="live-dot"></div>
       <span class="live-text">LIVE</span>
     </div>
+    <button class="btn btn-ghost" id="undo-btn" onclick="undo()" title="Undo (Ctrl+Z)" disabled>↩ Undo</button>
+    <button class="btn btn-ghost" id="redo-btn" onclick="redo()" title="Redo (Ctrl+Y)" disabled>↪ Redo</button>
     <button class="btn btn-ghost" id="dark-mode-btn" onclick="toggleDarkMode()" title="Toggle dark mode">🌙 Dark</button>
     <button class="btn btn-ghost" onclick="resetForm()">↺ Reset</button>
     <button class="btn btn-navy" onclick="openModal()">⊞ Print Summary</button>
@@ -1069,7 +1081,27 @@ select{
 
       <div class="sec-divider"></div>
 
-      <!-- ⑤ CUTTING GUIDE -->
+      <!-- ⑤ INGREDIENTS / ADDITIONAL INFO -->
+      <div class="sec">
+        <div class="sec-hd">
+          <div class="sec-num" style="background:#6B8E23">5</div>
+          Ingredients / Additional Info
+        </div>
+        <div class="field">
+          <div class="field-label">Ingredients List</div>
+          <textarea id="f-ingredients" rows="3" oninput="update()" placeholder="e.g. Green tea leaves, Chamomile, Natural flavoring…"></textarea>
+          <div class="field-hint">Comma-separated list · Displayed in small print on label</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Net Weight / Volume</div>
+          <input type="text" id="f-weight" value="" oninput="update()" placeholder="e.g. 100g, 250ml, 1kg"/>
+          <div class="field-hint">Displayed alongside product name if provided</div>
+        </div>
+      </div>
+
+      <div class="sec-divider"></div>
+
+      <!-- ⑥ CUTTING GUIDE -->
       <div class="sec">
         <div class="sec-hd">
           <div class="sec-num" style="background:var(--copper-d)">✂</div>
@@ -1133,10 +1165,10 @@ select{
 
       <div class="sec-divider"></div>
 
-      <!-- ⑥ SHEET SETTINGS -->
+      <!-- ⑦ SHEET SETTINGS -->
       <div class="sec" style="padding-bottom:0;">
         <div class="sec-hd">
-          <div class="sec-num" style="background:var(--teal)">6</div>
+          <div class="sec-num" style="background:var(--teal)">7</div>
           Sheet Settings
         </div>
         <div class="g2">
@@ -1346,6 +1378,10 @@ let zoom = 250;
 let cutClass = 'cut-dashed';
 let cutLabel = 'Dashed Border';
 let sheetsCount = 1;
+let undoStack = [];
+let redoStack = [];
+let isApplyingHistory = false;
+const MAX_HISTORY = 50;
 
 const THEMES = [
   {name:'Navy',   primary:'#0C1B2E', accent:'#0A7E8C', accentL:'#EBF8FA'},
@@ -1456,12 +1492,15 @@ function labelHTML(){
   const con   = esc(v('f-coname')) || '';
   const addr  = esc(v('f-addr').replace(/\n/g,' ')) || '';
   const tel   = esc(v('f-tel'))    || '';
+  const ingr  = esc(v('f-ingredients')) || '';
+  const wt    = esc(v('f-weight')) || '';
   const crops = `<span class="cm cm-tl"></span><span class="cm cm-tr"></span><span class="cm cm-bl"></span><span class="cm cm-br"></span>`;
   return `${crops}
     <div class="lr lr-biz">${biz}</div>
-    <div class="lr lr-product">${prod}</div>
+    <div class="lr lr-product">${prod}${wt ? ' · '+wt : ''}</div>
     <div class="lr lr-dates"><span class="mfg">Mfg:&nbsp;${mfg}</span>&nbsp;|&nbsp;<span class="exp">Exp:&nbsp;${exp}</span></div>
     <div class="lr lr-batch">Batch:&nbsp;${batch}</div>
+    ${ingr ? `<div class="lr lr-ingr">${ingr}</div>` : ''}
     <div class="lr lr-web">${web}</div>
     <div class="lr lr-company"><span>${con}</span><span>${addr}</span></div>
     <div class="lr lr-contact">Tel:&nbsp;${tel}</div>`;
@@ -1551,7 +1590,56 @@ function charCounts(){
 }
 
 /* ── Master update ── */
-function update(){ charCounts();updateSingle();updateA4(); }
+function update(){ charCounts();updateSingle();updateA4();pushHistory(); }
+
+/* ── Undo/Redo ── */
+function pushHistory(){
+  if(isApplyingHistory) return;
+  const state = getCurrentConfig();
+  if(undoStack.length > 0){
+    const last = undoStack[undoStack.length-1];
+    if(JSON.stringify(last) === JSON.stringify(state)) return;
+  }
+  undoStack.push(state);
+  if(undoStack.length > MAX_HISTORY) undoStack.shift();
+  redoStack = [];
+  updateUndoRedoBtns();
+}
+
+function undo(){
+  if(undoStack.length < 2) return;
+  isApplyingHistory = true;
+  try {
+    redoStack.push(undoStack.pop());
+    const state = undoStack[undoStack.length-1];
+    applyConfig(state);
+  } finally {
+    isApplyingHistory = false;
+  }
+  updateUndoRedoBtns();
+  toast('↩ Undo','default',1500);
+}
+
+function redo(){
+  if(redoStack.length === 0) return;
+  isApplyingHistory = true;
+  try {
+    const state = redoStack.pop();
+    undoStack.push(state);
+    applyConfig(state);
+  } finally {
+    isApplyingHistory = false;
+  }
+  updateUndoRedoBtns();
+  toast('↪ Redo','default',1500);
+}
+
+function updateUndoRedoBtns(){
+  const ubtn = g('undo-btn');
+  const rbtn = g('redo-btn');
+  if(ubtn) ubtn.disabled = undoStack.length < 2;
+  if(rbtn) rbtn.disabled = redoStack.length === 0;
+}
 
 /* ── Zoom ── */
 function setZoom(z){
@@ -1626,6 +1714,7 @@ function resetForm(){
     ['f-coname','My Simple Business Pvt Ltd'],
     ['f-addr','No. 45, High Street, Colombo 03, LK'],
     ['f-tel','+94 11 234 5678'],['f-cols','5'],['f-rows','11'],
+    ['f-ingredients',''],['f-weight',''],
   ];
   defaults.forEach(([id,val])=>{ const el=g(id);if(el)el.value=val; });
   sheetsCount=1;
@@ -1685,6 +1774,8 @@ function getCurrentConfig(){
     companyName: v('f-coname'),
     address: v('f-addr'),
     telephone: v('f-tel'),
+    ingredients: v('f-ingredients'),
+    weight: v('f-weight'),
     columns: v('f-cols'),
     rows: v('f-rows'),
     sheets: sheetsCount,
@@ -1716,6 +1807,8 @@ function applyConfig(config){
     ['f-coname', config.companyName],
     ['f-addr', config.address],
     ['f-tel', config.telephone],
+    ['f-ingredients', config.ingredients],
+    ['f-weight', config.weight],
     ['f-cols', config.columns],
     ['f-rows', config.rows],
   ];
@@ -2027,6 +2120,19 @@ try {
     if(btn) btn.innerHTML = '☀️ Light';
   }
 } catch(e){}
+
+document.addEventListener('keydown', e => {
+  if((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey){
+    e.preventDefault();
+    undo();
+  }
+  if((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))){
+    e.preventDefault();
+    redo();
+  }
+});
+
+pushHistory(); // Save initial state
 </script>
 </body>
 </html>
