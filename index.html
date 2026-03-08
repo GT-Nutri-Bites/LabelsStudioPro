@@ -180,6 +180,17 @@ body{font-family:var(--font);background:var(--ivory);color:var(--ink);display:fl
 .btn:active{transform:scale(.97);}
 .btn:disabled{opacity:.35;cursor:not-allowed;pointer-events:none;}
 
+.skip-link{
+  position:absolute;top:-40px;left:0;background:var(--teal);color:#fff;
+  padding:8px 16px;z-index:1000;font-size:.85rem;border-radius:0 0 var(--r) 0;
+  transition:top .2s;text-decoration:none;
+}
+.skip-link:focus{top:0;}
+
+:focus-visible{
+  outline:2px solid var(--teal);outline-offset:2px;border-radius:var(--r);
+}
+
 .btn-ghost{
   background:rgba(255,255,255,.06);color:rgba(255,255,255,.75);
   border:1px solid rgba(255,255,255,.12);
@@ -851,6 +862,43 @@ select{
 .toast-bar.red{background:var(--red);}
 
 /* ═══════════════════════════════════════════════════════════
+   RESPONSIVE LAYOUT
+═══════════════════════════════════════════════════════════ */
+@media(max-width:1024px){
+  .workspace{grid-template-columns:340px 1fr;}
+  .topbar-pill{display:none;}
+}
+
+@media(max-width:768px){
+  .workspace{grid-template-columns:1fr;grid-template-rows:auto 1fr;}
+  .sidebar{max-height:50vh;border-right:none;border-bottom:1px solid var(--border);}
+  .topbar{height:auto;padding:8px 12px;flex-wrap:wrap;gap:8px;}
+  .topbar-pill{display:none;}
+  .topbar-divider{display:none;}
+  .topbar-right{width:100%;justify-content:flex-end;flex-wrap:wrap;gap:4px;}
+  .topbar-right .btn{font-size:.7rem;padding:6px 10px;}
+  .preview-tabs{flex-wrap:wrap;gap:4px;padding:8px 12px;}
+  .tab-actions{width:100%;justify-content:flex-end;}
+  .stats-bar{flex-wrap:wrap;height:auto;padding:8px 12px;gap:8px;}
+  .stats-right{width:100%;justify-content:flex-end;}
+  .zoom-bar{flex-wrap:wrap;justify-content:center;gap:6px;padding:8px;}
+  .zoom-hint{width:100%;text-align:center;}
+  .modal{width:95%;max-width:95%;margin:10px;}
+  .modal-grid{grid-template-columns:1fr 1fr;}
+}
+
+@media(max-width:480px){
+  .topbar-right .btn{font-size:.65rem;padding:5px 8px;}
+  .preview-panel{min-width:0;}
+  .sidebar-body{padding:12px;}
+  .sec{padding:12px;}
+  .g2{grid-template-columns:1fr;}
+  .config-actions{flex-direction:column;}
+  .config-btn{min-width:100%;}
+  .modal-grid{grid-template-columns:1fr;}
+}
+
+/* ═══════════════════════════════════════════════════════════
    PRINT
 ═══════════════════════════════════════════════════════════ */
 @media print{
@@ -912,10 +960,12 @@ select{
 </head>
 <body>
 
+<a href="#label-preview" class="skip-link">Skip to preview</a>
+
 <!-- ═══════════════════════════════════════════════════════════
      TOPBAR
 ═══════════════════════════════════════════════════════════ -->
-<header class="topbar">
+<header class="topbar" role="banner">
   <a class="logo-wrap" href="#">
     <div class="logo-mark">🏷</div>
     <div>
@@ -947,7 +997,7 @@ select{
 <div class="workspace">
 
   <!-- ══ SIDEBAR ══ -->
-  <aside class="sidebar">
+  <aside class="sidebar" role="complementary" aria-label="Label Configuration">
     <div class="sidebar-header">
       <div>
         <div class="sh-title">Label Configuration</div>
@@ -991,7 +1041,7 @@ select{
 
         <div class="field">
           <div class="field-label">Label Colour Theme</div>
-          <div class="color-picker-row" id="theme-swatches">
+          <div class="color-picker-row" id="theme-swatches" role="radiogroup" aria-label="Color theme">
             <!-- injected by JS -->
           </div>
           <div class="custom-color-row" id="custom-color-row">
@@ -1244,9 +1294,9 @@ select{
         <div class="field">
           <div class="field-label">Number of Sheets</div>
           <div class="quantity-row">
-            <button class="qty-btn" onclick="adjSheets(-1)">−</button>
+            <button class="qty-btn" onclick="adjSheets(-1)" aria-label="Decrease sheets">−</button>
             <div class="qty-display" id="sheets-display">1</div>
-            <button class="qty-btn" onclick="adjSheets(+1)">+</button>
+            <button class="qty-btn" onclick="adjSheets(+1)" aria-label="Increase sheets">+</button>
             <input type="hidden" id="f-sheets" value="1"/>
           </div>
           <div class="field-hint">Total labels calculated automatically below</div>
@@ -1262,7 +1312,7 @@ select{
   </aside>
 
   <!-- ══ PREVIEW PANEL ══ -->
-  <section class="preview-panel">
+  <section class="preview-panel" role="main" aria-label="Label Preview">
 
     <!-- Tabs -->
     <div class="preview-tabs">
@@ -1290,9 +1340,9 @@ select{
         </div>
       </div>
       <div class="zoom-bar">
-        <button class="zoom-btn" onclick="adjZoom(-25)" title="Zoom Out (−25%)">−</button>
+        <button class="zoom-btn" onclick="adjZoom(-25)" title="Zoom Out (−25%)" aria-label="Zoom out">−</button>
         <div class="zoom-value" id="zoom-disp">250%</div>
-        <button class="zoom-btn" onclick="adjZoom(+25)" title="Zoom In (+25%)">+</button>
+        <button class="zoom-btn" onclick="adjZoom(+25)" title="Zoom In (+25%)" aria-label="Zoom in">+</button>
         <input type="range" class="zoom-slider" id="zoom-range" min="50" max="500" value="250" step="25" oninput="setZoom(+this.value)" title="Drag to adjust zoom"/>
         <span class="zoom-hint" id="zoom-hint">Ctrl+Scroll to zoom · Label actual size: 1.5 in × 1 in</span>
       </div>
@@ -1313,7 +1363,7 @@ select{
     </div>
 
     <!-- Stats Bar -->
-    <div class="stats-bar">
+    <div class="stats-bar" role="status" aria-live="polite">
       <div class="stat-item">
         <div class="stat-pulse"></div>
         <div>
@@ -1468,7 +1518,11 @@ function buildSwatches(){
     sw.className='color-swatch'+(i===0?' selected':'');
     sw.style.cssText=`background:${th.primary};`;
     sw.title=th.name;
+    sw.tabIndex=0;
+    sw.setAttribute('role','radio');
+    sw.setAttribute('aria-label',th.name+' theme');
     sw.onclick=()=>applyTheme(i);
+    sw.onkeydown=(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();applyTheme(i);}};
     row.appendChild(sw);
   });
   const label=document.createElement('span');
