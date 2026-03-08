@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Label Studio Pro — Product Label Designer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════════════════════
+   RESET & TOKENS
+═══════════════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  /* Core Palette */
+  --navy:   #0C1B2E;
+  --navy-2: #152338;
+  --navy-3: #1D3150;
+  --navy-4: #243B60;
+
+  --ivory:  #F7F2EA;
+  --ivory-2:#EDE8DF;
+  --ivory-3:#E2DBD0;
+  --parchment:#FAF8F4;
+
+  --copper: #B07D3A;
+  --copper-l:#C9913A;
+  --copper-d:#8A5F24;
+  --copper-bg:#FBF4E8;
+  --copper-brd:#E8D0A0;
+
+  --teal:   #0A7E8C;
+  --teal-l: #0D9BAC;
+  --teal-d: #076575;
+  --teal-bg:#EBF8FA;
+  --teal-brd:#A8DDE4;
+
+  --slate:  #4E6A82;
+  --slate-l:#8BA4B8;
+  --slate-xl:#B8CDD9;
+
+  --red:    #C13030;
+  --red-bg: #FDF0EF;
+  --green:  #2E9E5B;
+  --green-bg:#EBF8F1;
+
+  --ink:    #1A2B3C;
+  --ink-soft:#3A5068;
+  --border: #D8E2EA;
+  --border-l:#EBF0F5;
+
+  --white:  #FFFFFF;
+  --shadow-sm: 0 1px 4px rgba(12,27,46,.06);
+  --shadow:    0 2px 14px rgba(12,27,46,.09);
+  --shadow-lg: 0 8px 40px rgba(12,27,46,.16);
+  --shadow-xl: 0 20px 80px rgba(12,27,46,.24);
+
+  --r:  6px;
+  --r2: 10px;
+  --r3: 14px;
+
+  --font:  'IBM Plex Sans', sans-serif;
+  --mono:  'IBM Plex Mono', monospace;
+  --serif: 'Playfair Display', serif;
+
+  /* Label theme vars (user-customizable) */
+  --lbl-primary: #0C1B2E;
+  --lbl-accent:  #0A7E8C;
+  --lbl-accent-l:#EBF8FA;
+}
+
+html,body{height:100%;font-size:15px;-webkit-font-smoothing:antialiased;}
+body{font-family:var(--font);background:var(--ivory);color:var(--ink);display:flex;flex-direction:column;overflow-x:hidden;}
+
+/* ═══════════════════════════════════════════════════════════
+   TOPBAR
+═══════════════════════════════════════════════════════════ */
+.topbar{
+  background:var(--navy);
+  height:60px;
+  display:flex;align-items:center;padding:0 24px;gap:16px;
+  flex-shrink:0;position:sticky;top:0;z-index:200;
+  box-shadow:0 2px 24px rgba(0,0,0,.4);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+
+.logo-wrap{display:flex;align-items:center;gap:12px;text-decoration:none;user-select:none;}
+.logo-mark{
+  width:36px;height:36px;border-radius:9px;
+  background:linear-gradient(135deg,var(--copper-l),var(--copper-d));
+  display:grid;place-items:center;font-size:18px;
+  box-shadow:0 2px 10px rgba(176,125,58,.35);
+  flex-shrink:0;
+}
+.logo-name{
+  font-family:var(--serif);font-size:1.2rem;color:#fff;
+  letter-spacing:.02em;line-height:1.1;
+}
+.logo-tag{
+  font-size:.6rem;color:var(--slate-l);font-family:var(--mono);
+  letter-spacing:.15em;text-transform:uppercase;
+}
+
+.topbar-divider{width:1px;height:30px;background:rgba(255,255,255,.1);margin:0 6px;}
+
+.topbar-pill{
+  font-size:.68rem;font-family:var(--mono);letter-spacing:.08em;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  color:rgba(255,255,255,.5);padding:4px 12px;border-radius:20px;
+}
+
+.live-indicator{display:flex;align-items:center;gap:7px;}
+.live-dot{
+  width:7px;height:7px;border-radius:50%;background:#4EDA96;
+  box-shadow:0 0 8px rgba(78,218,150,.5);
+  animation:livepulse 2s ease-in-out infinite;
+}
+@keyframes livepulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.8)}}
+.live-text{font-size:.72rem;font-family:var(--mono);color:#4EDA96;font-weight:500;letter-spacing:.06em;}
+
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+
+/* BUTTONS */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:9px 18px;border-radius:var(--r);
+  font-family:var(--font);font-size:.8rem;font-weight:600;
+  cursor:pointer;border:none;
+  transition:all .18s cubic-bezier(.4,0,.2,1);
+  white-space:nowrap;letter-spacing:.01em;
+  position:relative;overflow:hidden;
+}
+.btn::after{
+  content:'';position:absolute;inset:0;
+  background:rgba(255,255,255,0);transition:background .15s;
+}
+.btn:hover::after{background:rgba(255,255,255,.08);}
+.btn:active{transform:scale(.97);}
+
+.btn-ghost{
+  background:rgba(255,255,255,.06);color:rgba(255,255,255,.75);
+  border:1px solid rgba(255,255,255,.12);
+}
+.btn-ghost:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2);}
+
+.btn-copper{
+  background:linear-gradient(135deg,var(--copper-l),var(--copper-d));
+  color:#fff;
+  box-shadow:0 2px 10px rgba(176,125,58,.3);
+}
+.btn-copper:hover{box-shadow:0 4px 18px rgba(176,125,58,.45);transform:translateY(-1px);}
+
+.btn-teal{
+  background:linear-gradient(135deg,var(--teal-l),var(--teal-d));
+  color:#fff;
+  box-shadow:0 2px 10px rgba(10,126,140,.25);
+}
+.btn-teal:hover{box-shadow:0 4px 18px rgba(10,126,140,.4);transform:translateY(-1px);}
+
+.btn-navy{
+  background:rgba(255,255,255,.08);color:#fff;
+  border:1px solid rgba(255,255,255,.14);
+}
+.btn-navy:hover{background:rgba(255,255,255,.14);}
+
+.btn-solid{
+  background:var(--ivory);color:var(--navy);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow-sm);
+}
+.btn-solid:hover{background:var(--white);box-shadow:var(--shadow);}
+
+/* ═══════════════════════════════════════════════════════════
+   WORKSPACE LAYOUT
+═══════════════════════════════════════════════════════════ */
+.workspace{
+  display:grid;grid-template-columns:400px 1fr;
+  flex:1;min-height:0;overflow:hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════════════════════════ */
+.sidebar{
+  background:var(--parchment);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+
+.sidebar-header{
+  background:var(--navy-2);
+  padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.06);
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+}
+.sh-title{font-family:var(--serif);font-size:.9rem;color:#fff;letter-spacing:.02em;}
+.sh-sub{font-size:.65rem;color:var(--slate-l);font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;margin-top:1px;}
+
+.sidebar-body{overflow-y:auto;flex:1;padding:0 0 40px;}
+.sidebar-body::-webkit-scrollbar{width:4px}
+.sidebar-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.sidebar-body::-webkit-scrollbar-track{background:transparent}
+
+/* Section headers */
+.sec{padding:16px 20px 0;}
+.sec-hd{
+  display:flex;align-items:center;gap:9px;
+  font-size:.65rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--slate);margin-bottom:12px;
+  padding-bottom:8px;border-bottom:1px solid var(--border);
+}
+.sec-num{
+  width:22px;height:22px;border-radius:50%;
+  display:grid;place-items:center;
+  font-size:.68rem;font-weight:700;color:#fff;flex-shrink:0;
+}
+
+/* Form elements */
+.field{margin-bottom:10px;}
+.field-label{
+  font-size:.72rem;font-weight:600;color:var(--ink-soft);
+  margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;
+}
+.field-label .req{color:var(--red);margin-left:2px;}
+.field-hint{font-size:.66rem;color:var(--slate-l);margin-top:4px;line-height:1.4;}
+.char-count{font-size:.65rem;font-family:var(--mono);}
+.char-count.ok{color:var(--slate-l);}
+.char-count.warn{color:var(--copper);}
+.char-count.over{color:var(--red);}
+
+.input-wrap{position:relative;}
+.input-wrap .input-icon{
+  position:absolute;left:11px;top:50%;transform:translateY(-50%);
+  font-size:.85rem;pointer-events:none;opacity:.5;
+}
+.input-wrap.has-icon input,
+.input-wrap.has-icon textarea{padding-left:32px;}
+
+input[type=text],input[type=number],textarea,select{
+  width:100%;
+  background:var(--white);border:1.5px solid var(--border-l);
+  border-radius:var(--r);padding:9px 12px;
+  font-family:var(--font);font-size:.86rem;color:var(--ink);
+  outline:none;transition:border-color .18s,box-shadow .18s;
+  appearance:none;
+}
+input[type=text]:hover,input[type=number]:hover,textarea:hover,select:hover{
+  border-color:var(--border);
+}
+input[type=text]:focus,input[type=number]:focus,textarea:focus,select:focus{
+  border-color:var(--teal);
+  box-shadow:0 0 0 3.5px rgba(10,126,140,.11);
+}
+textarea{resize:vertical;min-height:56px;line-height:1.55;}
+
+select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238BA4B8'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:calc(100% - 12px) center;
+  padding-right:32px;cursor:pointer;
+}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+
+/* ── Theme Color Picker ── */
+.color-picker-row{
+  display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;
+}
+.color-swatch{
+  width:26px;height:26px;border-radius:50%;cursor:pointer;
+  border:2px solid transparent;transition:all .15s;
+  flex-shrink:0;
+}
+.color-swatch:hover{transform:scale(1.1);}
+.color-swatch.selected{border-color:var(--ink)!important;box-shadow:0 0 0 2px var(--white),0 0 0 4px var(--ink);}
+.color-swatch-label{font-size:.68rem;color:var(--slate-l);font-family:var(--mono);}
+
+/* ── Cut Panel ── */
+.cut-panel{
+  background:var(--copper-bg);
+  border:1.5px solid var(--copper-brd);
+  border-radius:var(--r2);padding:14px;margin:0;
+}
+.cut-title{
+  display:flex;align-items:center;gap:8px;
+  font-size:.75rem;font-weight:700;color:var(--copper-d);
+  margin-bottom:12px;letter-spacing:.04em;
+}
+.cut-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.cut-opt{
+  background:var(--white);border:1.5px solid var(--border);
+  border-radius:var(--r);padding:9px 10px;
+  cursor:pointer;transition:all .15s;user-select:none;
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  text-align:center;
+}
+.cut-opt:hover{border-color:var(--copper);background:var(--copper-bg);}
+.cut-opt.active{border-color:var(--copper);background:#FDF1DC;box-shadow:0 0 0 3px rgba(176,125,58,.12);}
+.cut-opt input[type=radio]{display:none;}
+.cut-icon{font-size:1.1rem;}
+.cut-name{font-size:.73rem;font-weight:600;color:var(--ink);}
+.cut-desc{font-size:.62rem;color:var(--slate-l);line-height:1.3;}
+.cut-opt.active .cut-name{color:var(--copper-d);}
+
+/* Full-width none option */
+.cut-opt-full{
+  grid-column:1/-1;flex-direction:row;gap:10px;text-align:left;padding:9px 12px;
+}
+.cut-opt-full .cut-desc{display:block;}
+
+.extras{display:flex;flex-direction:column;gap:7px;margin-top:12px;padding-top:10px;border-top:1px solid var(--copper-brd);}
+.chk-row{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;}
+.chk-row input[type=checkbox]{width:15px;height:15px;accent-color:var(--teal);cursor:pointer;flex-shrink:0;}
+.chk-row span{font-size:.77rem;color:var(--ink-soft);}
+
+/* Sheet settings */
+.quantity-row{display:flex;align-items:center;gap:10px;}
+.qty-btn{
+  width:32px;height:32px;border-radius:var(--r);
+  border:1.5px solid var(--border);background:var(--white);
+  font-size:1rem;cursor:pointer;display:grid;place-items:center;
+  transition:all .15s;flex-shrink:0;color:var(--ink);
+}
+.qty-btn:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-bg);}
+.qty-display{
+  flex:1;text-align:center;font-family:var(--mono);font-size:1rem;
+  font-weight:600;color:var(--ink);background:var(--white);
+  border:1.5px solid var(--border);border-radius:var(--r);
+  padding:6px;
+}
+
+/* Info card */
+.info-card{
+  background:var(--teal-bg);border:1px solid var(--teal-brd);
+  border-radius:var(--r);padding:10px 12px;
+  font-size:.73rem;color:var(--teal-d);line-height:1.6;
+  display:flex;gap:8px;
+}
+.info-card .icon{flex-shrink:0;font-size:.9rem;}
+
+/* Section dividers */
+.sec-divider{height:1px;background:var(--border);margin:4px 0;}
+
+/* ═══════════════════════════════════════════════════════════
+   PREVIEW PANEL
+═══════════════════════════════════════════════════════════ */
+.preview-panel{
+  display:flex;flex-direction:column;overflow:hidden;
+  background:var(--ivory-2);
+}
+
+/* Tabs */
+.preview-tabs{
+  background:var(--white);border-bottom:1px solid var(--border);
+  padding:0 20px;display:flex;align-items:stretch;flex-shrink:0;
+  box-shadow:0 1px 4px rgba(12,27,46,.04);
+}
+.tab{
+  padding:14px 20px;font-size:.8rem;font-weight:600;
+  color:var(--slate-l);cursor:pointer;
+  border-bottom:2.5px solid transparent;
+  transition:all .18s;white-space:nowrap;
+  display:flex;align-items:center;gap:8px;
+  position:relative;
+}
+.tab:hover{color:var(--ink);}
+.tab.active{color:var(--teal);border-bottom-color:var(--teal);}
+.tab-badge{
+  background:var(--teal-bg);color:var(--teal);
+  font-size:.64rem;font-weight:700;
+  padding:2px 8px;border-radius:20px;
+  font-family:var(--mono);
+}
+.tab.active .tab-badge{background:var(--teal);color:#fff;}
+
+.tab-actions{margin-left:auto;display:flex;align-items:center;gap:7px;padding:8px 0;}
+
+/* Tab contents */
+.tab-content{display:none;flex:1;overflow:hidden;}
+.tab-content.active{display:flex;flex-direction:column;flex:1;}
+
+/* ── Single Preview ── */
+.single-view{
+  flex:1;overflow:auto;
+  display:flex;align-items:center;justify-content:center;
+  padding:48px 40px;
+  background:
+    radial-gradient(circle at 15px 15px, rgba(12,27,46,.03) 1px, transparent 0),
+    radial-gradient(circle at 55px 55px, rgba(12,27,46,.03) 1px, transparent 0);
+  background-size:70px 70px;
+  background-color:var(--ivory-2);
+}
+.single-center{text-align:center;display:flex;flex-direction:column;align-items:center;gap:0;}
+.preview-label{
+  font-size:.65rem;font-family:var(--mono);letter-spacing:.12em;
+  text-transform:uppercase;color:var(--slate-l);
+  margin-bottom:18px;display:flex;align-items:center;gap:8px;
+}
+.preview-label::before,.preview-label::after{
+  content:'';display:block;width:30px;height:1px;background:var(--slate-xl);
+}
+
+.label-card{
+  width:216px;height:144px;
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 12px 48px rgba(12,27,46,.22),0 2px 8px rgba(12,27,46,.12);
+  border-radius:2px;font-family:var(--font);
+  position:relative;flex-shrink:0;
+  transform-origin:top center;
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+
+/* Label rows */
+.lr{
+  display:flex;align-items:center;justify-content:center;
+  text-align:center;overflow:hidden;flex-shrink:0;padding:0 6px;
+}
+
+.lr-biz{
+  background:var(--lbl-primary);color:#fff;
+  font-family:var(--serif);font-size:8.5px;height:23px;
+  border-bottom:2px solid var(--lbl-accent);letter-spacing:.06em;
+}
+.lr-product{
+  background:#fff;color:var(--lbl-primary);
+  font-weight:700;font-size:7.5px;height:22px;
+  border-bottom:1px solid #EEF2F5;line-height:1.25;
+}
+.lr-dates{
+  background:var(--lbl-accent-l);color:var(--ink-soft);
+  font-size:6px;height:19px;border-bottom:1px solid #D5EDED;gap:8px;
+}
+.lr-dates .mfg{color:var(--teal-d);font-weight:600;}
+.lr-dates .exp{color:var(--red);font-weight:700;}
+.lr-batch{
+  background:#fff;color:var(--teal-d);
+  font-size:6px;height:16px;
+  font-family:var(--mono);border-bottom:1px solid #EEF2F5;
+  letter-spacing:.03em;
+}
+.lr-web{
+  background:var(--lbl-primary);color:rgba(255,255,255,.8);
+  font-size:5.5px;height:14px;letter-spacing:.04em;
+}
+.lr-company{
+  background:#F8FAFB;color:var(--slate);font-size:5.5px;
+  height:22px;flex-direction:column;justify-content:center;
+  gap:1.5px;border-bottom:1px solid #EEF2F5;
+  line-height:1.3;padding:0 5px;text-align:center;
+}
+.lr-contact{
+  background:#F8FAFB;color:var(--slate-l);font-size:5px;
+  height:10px;font-family:var(--mono);letter-spacing:.02em;
+  flex:1;border-top:none;
+}
+
+/* Preview specs chips */
+.spec-chips{
+  display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
+  margin-top:28px;
+}
+.chip{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:20px;padding:5px 13px;
+  font-size:.72rem;color:var(--slate);
+  display:flex;align-items:center;gap:5px;
+  box-shadow:var(--shadow-sm);
+}
+.chip-icon{font-size:.8rem;}
+
+/* ── Zoom Bar ── */
+.zoom-bar{
+  background:var(--white);border-top:1px solid var(--border);
+  padding:10px 20px;display:flex;align-items:center;gap:10px;
+  flex-shrink:0;
+}
+.zoom-btn{
+  width:30px;height:30px;border-radius:var(--r);
+  border:1.5px solid var(--border);background:var(--white);
+  cursor:pointer;font-size:1rem;display:grid;place-items:center;
+  transition:all .15s;color:var(--ink);
+}
+.zoom-btn:hover{border-color:var(--teal);color:var(--teal);}
+.zoom-value{
+  font-family:var(--mono);font-size:.78rem;color:var(--ink-soft);
+  width:46px;text-align:center;font-weight:500;
+}
+.zoom-slider{
+  flex:1;max-width:160px;accent-color:var(--teal);cursor:pointer;
+  height:4px;
+}
+.zoom-hint{font-size:.7rem;color:var(--slate-xl);margin-left:auto;font-style:italic;}
+
+/* ── A4 Sheet Preview ── */
+.a4-view{
+  flex:1;overflow:auto;padding:32px;
+  background:
+    radial-gradient(circle at 20px 20px, rgba(12,27,46,.04) 1px, transparent 0),
+    radial-gradient(circle at 60px 60px, rgba(12,27,46,.04) 1px, transparent 0);
+  background-size:80px 80px;
+  background-color:var(--ivory-3);
+  display:flex;align-items:flex-start;justify-content:center;
+}
+
+.a4-sheet{
+  background:var(--white);width:794px;min-height:1123px;
+  box-shadow:0 4px 32px rgba(12,27,46,.16),0 20px 80px rgba(12,27,46,.12);
+  position:relative;flex-shrink:0;
+  border:1px solid rgba(12,27,46,.06);
+}
+
+.a4-inner{
+  padding:33px 37px;
+  display:grid;
+  grid-template-columns:repeat(5,144px);
+  grid-auto-rows:96px;
+  gap:0;position:relative;
+}
+
+.a4-label{
+  width:144px;height:96px;
+  display:flex;flex-direction:column;overflow:hidden;
+  position:relative;font-family:var(--font);
+}
+
+/* A4 label sizing */
+.a4-label .lr-biz   {font-size:5.5px;height:15px;}
+.a4-label .lr-product{font-size:5px;height:14px;}
+.a4-label .lr-dates  {font-size:3.8px;height:11px;}
+.a4-label .lr-batch  {font-size:3.6px;height:10px;}
+.a4-label .lr-web    {font-size:3.6px;height:9px;}
+.a4-label .lr-company{font-size:3.2px;height:14px;}
+.a4-label .lr-contact{font-size:3px;height:8px;}
+
+.a4-border{position:absolute;inset:0;border:1px solid #E0E4E8;pointer-events:none;}
+
+/* ── Cut styles ── */
+.cut-dashed   .a4-label{outline:1px dashed #9CADB8;outline-offset:0;}
+.cut-solid    .a4-label{outline:.75px solid #B0BEC5;outline-offset:0;}
+
+.cut-cropmarks .a4-label,
+.cut-both .a4-label{overflow:visible;}
+
+.cm{display:block;position:absolute;width:9px;height:9px;pointer-events:none;}
+.cm-tl{top:-5px;left:-5px;border-top:1.5px solid #555;border-left:1.5px solid #555;}
+.cm-tr{top:-5px;right:-5px;border-top:1.5px solid #555;border-right:1.5px solid #555;}
+.cm-bl{bottom:-5px;left:-5px;border-bottom:1.5px solid #555;border-left:1.5px solid #555;}
+.cm-br{bottom:-5px;right:-5px;border-bottom:1.5px solid #555;border-right:1.5px solid #555;}
+
+.cut-both .a4-label{outline:1px dashed #9CADB8;outline-offset:0;}
+.cut-crosshair .a4-label{overflow:visible;}
+.cut-crosshair .a4-label::before{
+  content:'';position:absolute;left:50%;top:-7px;
+  width:.75px;height:calc(100% + 14px);
+  background:rgba(0,0,0,.2);transform:translateX(-50%);
+}
+.cut-crosshair .a4-label::after{
+  content:'';position:absolute;top:50%;left:-7px;
+  height:.75px;width:calc(100% + 14px);
+  background:rgba(0,0,0,.2);transform:translateY(-50%);
+}
+
+/* light guide */
+.light-guides.cut-dashed   .a4-label{outline-color:#C4D4DE;}
+.light-guides.cut-solid    .a4-label{outline-color:#D0DDE6;}
+.light-guides .cm-tl,.light-guides .cm-tr,.light-guides .cm-bl,.light-guides .cm-br{border-color:#AAC0CE;}
+
+/* Sheet header */
+.sheet-header{
+  background:var(--navy-2);color:rgba(255,255,255,.6);
+  font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;
+  padding:7px 16px;display:flex;align-items:center;justify-content:space-between;
+  text-transform:uppercase;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STATS BAR
+═══════════════════════════════════════════════════════════ */
+.stats-bar{
+  background:var(--navy);border-top:1px solid rgba(255,255,255,.08);
+  padding:0 22px;display:flex;align-items:stretch;flex-shrink:0;height:46px;
+}
+.stat-item{
+  display:flex;align-items:center;gap:8px;padding:0 16px;
+  border-right:1px solid rgba(255,255,255,.07);
+}
+.stat-item:first-child{padding-left:0;}
+.stat-item:last-child{border-right:none;}
+.stat-icon{font-size:.85rem;opacity:.5;}
+.stat-value{font-family:var(--mono);font-size:.82rem;color:#fff;font-weight:500;}
+.stat-label{font-size:.65rem;color:rgba(255,255,255,.35);letter-spacing:.04em;}
+.stat-sep{height:20px;width:1px;background:rgba(255,255,255,.07);}
+.stat-pulse{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 6px rgba(46,158,91,.5);}
+.stats-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+
+/* ═══════════════════════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════════════════════ */
+.overlay{
+  position:fixed;inset:0;background:rgba(8,16,28,.75);
+  backdrop-filter:blur(6px);z-index:300;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.overlay.open{opacity:1;pointer-events:all;}
+.modal{
+  background:var(--white);border-radius:16px;width:560px;
+  box-shadow:var(--shadow-xl);overflow:hidden;
+  transform:translateY(24px) scale(.97);
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+.overlay.open .modal{transform:translateY(0) scale(1);}
+
+.modal-head{
+  background:var(--navy);padding:22px 26px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.modal-title{
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--serif);font-size:1.1rem;color:#fff;
+}
+.modal-close{
+  width:30px;height:30px;border-radius:8px;
+  background:rgba(255,255,255,.1);border:none;color:#fff;
+  cursor:pointer;font-size:.9rem;display:grid;place-items:center;
+  transition:background .15s;
+}
+.modal-close:hover{background:rgba(255,255,255,.2);}
+
+.modal-body{padding:24px;}
+
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+.modal-stat{
+  background:var(--ivory);border:1px solid var(--border);
+  border-radius:var(--r2);padding:14px 16px;
+}
+.modal-stat-value{font-family:var(--serif);font-size:1.6rem;color:var(--navy);font-weight:600;}
+.modal-stat-label{font-size:.7rem;color:var(--slate);margin-top:2px;letter-spacing:.04em;text-transform:uppercase;}
+
+.print-tips{
+  background:var(--copper-bg);border:1px solid var(--copper-brd);
+  border-radius:var(--r);padding:14px 16px;margin-bottom:20px;
+}
+.print-tips-title{
+  font-size:.75rem;font-weight:700;color:var(--copper-d);
+  letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;
+  display:flex;align-items:center;gap:6px;
+}
+.tip-row{
+  display:flex;align-items:flex-start;gap:10px;
+  font-size:.79rem;color:var(--ink-soft);line-height:1.55;margin-bottom:6px;
+}
+.tip-row:last-child{margin-bottom:0;}
+.tip-num{
+  width:18px;height:18px;border-radius:50%;
+  background:var(--copper-d);color:#fff;
+  font-size:.62rem;font-weight:700;
+  display:grid;place-items:center;flex-shrink:0;margin-top:1px;
+}
+
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;}
+
+/* ═══════════════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════════════ */
+.toast{
+  position:fixed;bottom:28px;right:28px;
+  background:var(--navy);color:#fff;
+  padding:12px 20px 12px 16px;border-radius:10px;
+  font-size:.82rem;font-weight:500;
+  box-shadow:0 8px 32px rgba(12,27,46,.35);
+  z-index:400;display:flex;align-items:center;gap:10px;
+  transform:translateY(16px);opacity:0;
+  transition:all .28s cubic-bezier(.4,0,.2,1);
+  pointer-events:none;min-width:220px;
+  border:1px solid rgba(255,255,255,.1);
+}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast-bar{
+  width:3px;height:32px;border-radius:2px;
+  background:var(--teal-l);flex-shrink:0;
+}
+.toast-bar.copper{background:var(--copper-l);}
+.toast-bar.red{background:var(--red);}
+
+/* ═══════════════════════════════════════════════════════════
+   PRINT
+═══════════════════════════════════════════════════════════ */
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  html,body{background:#fff;}
+  .topbar,.sidebar,.preview-tabs,.zoom-bar,.stats-bar,
+  .tab-content:not(.active),.sheet-header,.overlay,.toast{display:none!important;}
+  .workspace,.preview-panel,.tab-content.active{display:block!important;overflow:visible!important;}
+  .a4-view{
+    padding:0!important;background:none!important;
+    overflow:visible!important;display:block!important;
+  }
+  .a4-sheet{
+    box-shadow:none!important;width:210mm!important;
+    min-height:297mm!important;border:none!important;
+    page-break-after:always;
+  }
+  .a4-inner{
+    padding:8.7mm 9.9mm!important;
+    grid-template-columns:repeat(var(--print-cols,5),1fr)!important;
+    grid-auto-rows:25.4mm!important;
+  }
+  .a4-label{width:38.1mm!important;height:25.4mm!important;}
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════════════════════ */
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.label-card{animation:fadeUp .4s ease both;}
+
+/* Stagger on sheet reload */
+.a4-label{animation:fadeUp .3s ease both;}
+.a4-label:nth-child(5n+1){animation-delay:.02s}
+.a4-label:nth-child(5n+2){animation-delay:.04s}
+.a4-label:nth-child(5n+3){animation-delay:.06s}
+.a4-label:nth-child(5n+4){animation-delay:.08s}
+.a4-label:nth-child(5n+5){animation-delay:.1s}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     TOPBAR
+═══════════════════════════════════════════════════════════ -->
+<header class="topbar">
+  <a class="logo-wrap" href="#">
+    <div class="logo-mark">🏷</div>
+    <div>
+      <div class="logo-name">Label Studio Pro</div>
+      <div class="logo-tag">Product Label Designer</div>
+    </div>
+  </a>
+
+  <div class="topbar-divider"></div>
+  <span class="topbar-pill">1.5″ × 1″ · A4 · 55 Labels/Sheet</span>
+
+  <div class="topbar-right">
+    <div class="live-indicator">
+      <div class="live-dot"></div>
+      <span class="live-text">LIVE</span>
+    </div>
+    <button class="btn btn-ghost" onclick="resetForm()">↺ Reset</button>
+    <button class="btn btn-navy" onclick="openModal()">⊞ Print Summary</button>
+    <button class="btn btn-copper" onclick="doPrint()">🖨 Print</button>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════
+     WORKSPACE
+═══════════════════════════════════════════════════════════ -->
+<div class="workspace">
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div>
+        <div class="sh-title">Label Configuration</div>
+        <div class="sh-sub">Fill in all required fields · Preview updates live</div>
+      </div>
+    </div>
+
+    <div class="sidebar-body">
+
+      <!-- ① BRAND -->
+      <div class="sec">
+        <div class="sec-hd">
+          <div class="sec-num" style="background:var(--navy)">1</div>
+          Brand Identity
+        </div>
+        <div class="field">
+          <div class="field-label">Business Name <span class="req">*</span><span class="char-count ok" id="cc1">17/30</span></div>
+          <input type="text" id="f-biz" value="My Simple Business" maxlength="30" oninput="update()" placeholder="Your brand name"/>
+          <div class="field-hint">Short brand name — shown in the label header</div>
+        </div>
+
+        <div class="field">
+          <div class="field-label">Label Colour Theme</div>
+          <div class="color-picker-row" id="theme-swatches">
+            <!-- injected by JS -->
+          </div>
+          <div class="field-hint">Sets the header & accent colour on your labels</div>
+        </div>
+      </div>
+
+      <div class="sec-divider"></div>
+
+      <!-- ② PRODUCT -->
+      <div class="sec">
+        <div class="sec-hd">
+          <div class="sec-num" style="background:var(--teal)">2</div>
+          Product Information
+        </div>
+        <div class="field">
+          <div class="field-label">Product Name <span class="req">*</span><span class="char-count ok" id="cc2">24/40</span></div>
+          <input type="text" id="f-product" value="Premium Herbal Tea · 100g" maxlength="40" oninput="update()" placeholder="Product name · size/weight"/>
+          <div class="field-hint">Include variant, size or weight for clarity</div>
+        </div>
+      </div>
+
+      <div class="sec-divider"></div>
+
+      <!-- ③ DATES & TRACEABILITY -->
+      <div class="sec">
+        <div class="sec-hd">
+          <div class="sec-num" style="background:var(--copper)">3</div>
+          Dates &amp; Traceability
+        </div>
+        <div class="g2">
+          <div class="field">
+            <div class="field-label">Manufacture Date</div>
+            <input type="text" id="f-mfg" value="01-Mar-2025" oninput="update()" placeholder="DD-Mon-YYYY"/>
+            <div class="field-hint">Format: DD-Mon-YYYY</div>
+          </div>
+          <div class="field">
+            <div class="field-label">Expiration Date</div>
+            <input type="text" id="f-exp" value="28-Feb-2027" oninput="update()" placeholder="DD-Mon-YYYY"/>
+            <div class="field-hint">Shown in red</div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">Batch / Lot Number <span class="req">*</span></div>
+          <input type="text" id="f-batch" value="BT-2025-001234" oninput="update()" placeholder="e.g. BT-2025-001234"/>
+          <div class="field-hint">Unique code for product traceability &amp; recall management</div>
+        </div>
+      </div>
+
+      <div class="sec-divider"></div>
+
+      <!-- ④ COMPANY DETAILS -->
+      <div class="sec">
+        <div class="sec-hd">
+          <div class="sec-num" style="background:var(--slate)">4</div>
+          Company Details
+        </div>
+        <div class="field">
+          <div class="field-label">Company / Legal Name</div>
+          <input type="text" id="f-coname" value="My Simple Business Pvt Ltd" oninput="update()"/>
+        </div>
+        <div class="field">
+          <div class="field-label">Address</div>
+          <textarea id="f-addr" rows="2" oninput="update()">No. 45, High Street, Colombo 03, LK</textarea>
+          <div class="field-hint">Keep concise for label fit — one or two lines</div>
+        </div>
+        <div class="g2">
+          <div class="field">
+            <div class="field-label">Contact Number</div>
+            <input type="text" id="f-tel" value="+94 11 234 5678" oninput="update()"/>
+          </div>
+          <div class="field">
+            <div class="field-label">Website</div>
+            <input type="text" id="f-web" value="www.mysimplebusiness.com" oninput="update()"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec-divider"></div>
+
+      <!-- ⑤ CUTTING GUIDE -->
+      <div class="sec">
+        <div class="sec-hd">
+          <div class="sec-num" style="background:var(--copper-d)">✂</div>
+          Cutting Guidelines
+        </div>
+        <div class="cut-panel">
+          <div class="cut-title">✂ &nbsp;Choose your cutting guide style</div>
+          <div class="cut-grid" id="cut-opts">
+
+            <label class="cut-opt active" data-val="cut-dashed" data-label="Dashed Border" onclick="setCut(this)">
+              <input type="radio" name="cut" checked/>
+              <div class="cut-icon">⬝</div>
+              <div class="cut-name">Dashed Border</div>
+              <div class="cut-desc">Classic perforated-cut border</div>
+            </label>
+
+            <label class="cut-opt" data-val="cut-solid" data-label="Solid Lines" onclick="setCut(this)">
+              <input type="radio" name="cut"/>
+              <div class="cut-icon">▪</div>
+              <div class="cut-name">Solid Lines</div>
+              <div class="cut-desc">Ideal for guillotine cutter</div>
+            </label>
+
+            <label class="cut-opt" data-val="cut-cropmarks" data-label="Crop Marks" onclick="setCut(this)">
+              <input type="radio" name="cut"/>
+              <div class="cut-icon">⌐</div>
+              <div class="cut-name">Crop Marks</div>
+              <div class="cut-desc">Professional corner marks</div>
+            </label>
+
+            <label class="cut-opt" data-val="cut-both" data-label="Dashed + Crop Marks" onclick="setCut(this)">
+              <input type="radio" name="cut"/>
+              <div class="cut-icon">⊞</div>
+              <div class="cut-name">Dashed + Marks</div>
+              <div class="cut-desc">Maximum precision combo</div>
+            </label>
+
+            <label class="cut-opt cut-opt-full" data-val="" data-label="None" onclick="setCut(this)">
+              <input type="radio" name="cut"/>
+              <div class="cut-icon">□</div>
+              <div>
+                <div class="cut-name">No Guide Lines</div>
+                <div class="cut-desc">Clean sheet, no visible guides — for die-cut labels</div>
+              </div>
+            </label>
+
+          </div>
+
+          <div class="extras">
+            <label class="chk-row">
+              <input type="checkbox" id="chk-light" checked onchange="update()"/>
+              <span>Light-colour guides (recommended for printing)</span>
+            </label>
+            <label class="chk-row">
+              <input type="checkbox" id="chk-show-single" onchange="update()"/>
+              <span>Show cutting guide on single label preview</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec-divider"></div>
+
+      <!-- ⑥ SHEET SETTINGS -->
+      <div class="sec" style="padding-bottom:0;">
+        <div class="sec-hd">
+          <div class="sec-num" style="background:var(--teal)">6</div>
+          Sheet Settings
+        </div>
+        <div class="g2">
+          <div class="field">
+            <div class="field-label">Columns</div>
+            <select id="f-cols" onchange="update()">
+              <option value="5" selected>5 columns</option>
+              <option value="4">4 columns</option>
+              <option value="3">3 columns</option>
+            </select>
+          </div>
+          <div class="field">
+            <div class="field-label">Rows</div>
+            <select id="f-rows" onchange="update()">
+              <option value="11" selected>11 rows</option>
+              <option value="10">10 rows</option>
+              <option value="8">8 rows</option>
+              <option value="6">6 rows</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field-label">Number of Sheets</div>
+          <div class="quantity-row">
+            <button class="qty-btn" onclick="adjSheets(-1)">−</button>
+            <div class="qty-display" id="sheets-display">1</div>
+            <button class="qty-btn" onclick="adjSheets(+1)">+</button>
+            <input type="hidden" id="f-sheets" value="1"/>
+          </div>
+          <div class="field-hint">Total labels calculated automatically below</div>
+        </div>
+
+        <div class="info-card">
+          <span class="icon">ℹ</span>
+          <span>Label size is fixed at <strong>1.5″ × 1.0″</strong>. Designed for A4 self-adhesive label sheets. Print at <strong>100% actual size — no scaling</strong>.</span>
+        </div>
+      </div>
+
+    </div><!-- /sidebar-body -->
+  </aside>
+
+  <!-- ══ PREVIEW PANEL ══ -->
+  <section class="preview-panel">
+
+    <!-- Tabs -->
+    <div class="preview-tabs">
+      <div class="tab active" onclick="switchTab('single',this)">
+        ⬜ Label Preview
+      </div>
+      <div class="tab" onclick="switchTab('sheet',this)">
+        ⊞ A4 Sheet &nbsp;<span class="tab-badge" id="cnt-badge">55</span>
+      </div>
+      <div class="tab-actions">
+        <button class="btn btn-solid" style="font-size:.76rem;padding:7px 13px;" onclick="setZoom(250)">⊟ Reset Zoom</button>
+        <button class="btn btn-teal" style="font-size:.76rem;padding:7px 13px;" onclick="doPrint()">🖨 Print</button>
+      </div>
+    </div>
+
+    <!-- Single Label Preview -->
+    <div class="tab-content active" id="tab-single">
+      <div class="single-view">
+        <div class="single-center">
+          <div class="preview-label">Actual Print Size · 1.5″ × 1.0″</div>
+          <div id="label-preview" class="label-card" style="transform:scale(2.5);margin-bottom:130px;"></div>
+          <div id="specs-row" class="spec-chips" style="margin-top:150px;"></div>
+        </div>
+      </div>
+      <div class="zoom-bar">
+        <button class="zoom-btn" onclick="adjZoom(-25)">−</button>
+        <div class="zoom-value" id="zoom-disp">250%</div>
+        <button class="zoom-btn" onclick="adjZoom(+25)">+</button>
+        <input type="range" class="zoom-slider" id="zoom-range" min="50" max="500" value="250" step="25" oninput="setZoom(+this.value)"/>
+        <span class="zoom-hint">Scroll to zoom · Label actual size: 1.5 in × 1 in</span>
+      </div>
+    </div>
+
+    <!-- A4 Sheet Preview -->
+    <div class="tab-content" id="tab-sheet">
+      <div class="a4-view">
+        <div class="a4-sheet">
+          <div class="sheet-header">
+            <span id="sheet-meta">A4 · 5 × 11 Grid · 55 Labels</span>
+            <span>Label Studio Pro · Print at 100% · No Scaling</span>
+          </div>
+          <div class="a4-inner cut-dashed" id="a4-inner"></div>
+          <div class="a4-border"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+      <div class="stat-item">
+        <div class="stat-pulse"></div>
+        <div>
+          <div class="stat-value" id="s-per">55</div>
+          <div class="stat-label">Per Sheet</div>
+        </div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-icon">📄</div>
+        <div>
+          <div class="stat-value" id="s-sheets">1</div>
+          <div class="stat-label">Sheets</div>
+        </div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-icon">🏷</div>
+        <div>
+          <div class="stat-value" id="s-total">55</div>
+          <div class="stat-label">Total Labels</div>
+        </div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-icon">✂</div>
+        <div>
+          <div class="stat-value" id="s-cut">Dashed</div>
+          <div class="stat-label">Cut Guide</div>
+        </div>
+      </div>
+      <div class="stats-right">
+        <div class="stat-item" style="border-right:none;">
+          <div style="font-family:var(--mono);font-size:.7rem;color:rgba(255,255,255,.35);letter-spacing:.08em;">A4 · 1.5″×1″ · 96dpi</div>
+        </div>
+        <button class="btn btn-copper" style="font-size:.75rem;padding:7px 14px;" onclick="openModal()">⊞ Print Summary</button>
+      </div>
+    </div>
+
+  </section>
+</div><!-- /workspace -->
+
+<!-- ═══════════════════════════════════════════════════════════
+     PRINT SUMMARY MODAL
+═══════════════════════════════════════════════════════════ -->
+<div class="overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">🖨 Print Summary</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-grid">
+        <div class="modal-stat">
+          <div class="modal-stat-value" id="m-per">55</div>
+          <div class="modal-stat-label">Labels per Sheet</div>
+        </div>
+        <div class="modal-stat">
+          <div class="modal-stat-value" id="m-sheets">1</div>
+          <div class="modal-stat-label">Sheets Required</div>
+        </div>
+        <div class="modal-stat">
+          <div class="modal-stat-value" id="m-total">55</div>
+          <div class="modal-stat-label">Total Labels</div>
+        </div>
+        <div class="modal-stat">
+          <div class="modal-stat-value" id="m-cut">Dashed</div>
+          <div class="modal-stat-label">Cutting Guide</div>
+        </div>
+      </div>
+
+      <div class="print-tips">
+        <div class="print-tips-title">📋 Before You Print</div>
+        <div class="tip-row"><div class="tip-num">1</div><span>Set page scaling to <strong>100% / Actual Size / No Scaling</strong> in your print dialog</span></div>
+        <div class="tip-row"><div class="tip-num">2</div><span>Load <strong>A4 self-adhesive label sheets</strong> into your printer — glossy or matte</span></div>
+        <div class="tip-row"><div class="tip-num">3</div><span><strong>Test print on plain paper first</strong> — hold over a label sheet to verify alignment before committing</span></div>
+        <div class="tip-row"><div class="tip-num">4</div><span>Cut carefully along the guide lines using a straight-edge cutter or guillotine</span></div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-solid" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-teal" onclick="doPrint();closeModal()">🖨 Print Now</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <div class="toast-bar" id="toast-bar"></div>
+  <span id="toast-msg">Done!</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════════ -->
+<script>
+/* ── Globals ── */
+let zoom = 250;
+let cutClass = 'cut-dashed';
+let cutLabel = 'Dashed Border';
+let sheetsCount = 1;
+
+const THEMES = [
+  {name:'Navy',   primary:'#0C1B2E', accent:'#0A7E8C', accentL:'#EBF8FA'},
+  {name:'Forest', primary:'#1A3928', accent:'#27AE60', accentL:'#EBF8F1'},
+  {name:'Merlot', primary:'#3D1020', accent:'#9B2335', accentL:'#FDECEA'},
+  {name:'Slate',  primary:'#2C3E50', accent:'#5D7A8A', accentL:'#EDF3F6'},
+  {name:'Copper', primary:'#2A1F0A', accent:'#B07D3A', accentL:'#FBF4E8'},
+  {name:'Plum',   primary:'#2D1B4E', accent:'#7B4FA6', accentL:'#F3EBF9'},
+  {name:'Coal',   primary:'#1C1C1C', accent:'#444444', accentL:'#F5F5F5'},
+  {name:'Teal',   primary:'#0A3040', accent:'#14A8C4', accentL:'#E9F8FC'},
+];
+let activeTheme = 0;
+
+/* ── Helpers ── */
+const g = id => document.getElementById(id);
+const v = id => (g(id)||{}).value || '';
+const esc = s => { const d=document.createElement('div');d.textContent=s;return d.innerHTML; };
+
+function toast(msg, type='default', dur=2800){
+  const t=g('toast'); const b=g('toast-bar'); const m=g('toast-msg');
+  m.textContent=msg;
+  b.className='toast-bar'+(type==='copper'?' copper':type==='red'?' red':'');
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+/* ── Colour theme setup ── */
+function buildSwatches(){
+  const row=g('theme-swatches');
+  row.innerHTML='';
+  THEMES.forEach((th,i)=>{
+    const sw=document.createElement('div');
+    sw.className='color-swatch'+(i===0?' selected':'');
+    sw.style.cssText=`background:${th.primary};`;
+    sw.title=th.name;
+    sw.onclick=()=>applyTheme(i);
+    row.appendChild(sw);
+  });
+  const label=document.createElement('span');
+  label.className='color-swatch-label';
+  label.id='theme-label';
+  label.textContent=THEMES[0].name;
+  row.appendChild(label);
+}
+
+function applyTheme(idx){
+  activeTheme=idx;
+  const th=THEMES[idx];
+  document.documentElement.style.setProperty('--lbl-primary',th.primary);
+  document.documentElement.style.setProperty('--lbl-accent', th.accent);
+  document.documentElement.style.setProperty('--lbl-accent-l',th.accentL);
+  document.querySelectorAll('.color-swatch').forEach((s,i)=>s.classList.toggle('selected',i===idx));
+  if(g('theme-label')) g('theme-label').textContent=th.name;
+  update();
+}
+
+/* ── Build label HTML ── */
+function labelHTML(){
+  const biz   = esc(v('f-biz'))    || 'Business Name';
+  const prod  = esc(v('f-product'))|| 'Product Name';
+  const mfg   = esc(v('f-mfg'))    || '—';
+  const exp   = esc(v('f-exp'))    || '—';
+  const batch = esc(v('f-batch'))  || '—';
+  const web   = esc(v('f-web'))    || '';
+  const con   = esc(v('f-coname')) || '';
+  const addr  = esc(v('f-addr').replace(/\n/g,' ')) || '';
+  const tel   = esc(v('f-tel'))    || '';
+  const crops = `<span class="cm cm-tl"></span><span class="cm cm-tr"></span><span class="cm cm-bl"></span><span class="cm cm-br"></span>`;
+  return `${crops}
+    <div class="lr lr-biz">${biz}</div>
+    <div class="lr lr-product">${prod}</div>
+    <div class="lr lr-dates"><span class="mfg">Mfg:&nbsp;${mfg}</span>&nbsp;|&nbsp;<span class="exp">Exp:&nbsp;${exp}</span></div>
+    <div class="lr lr-batch">Batch:&nbsp;${batch}</div>
+    <div class="lr lr-web">${web}</div>
+    <div class="lr lr-company"><span>${con}</span><span>${addr}</span></div>
+    <div class="lr lr-contact">Tel:&nbsp;${tel}</div>`;
+}
+
+/* ── Single preview ── */
+function updateSingle(){
+  const lp=g('label-preview');
+  if(!lp) return;
+  lp.innerHTML=labelHTML();
+  lp.style.transform=`scale(${zoom/100})`;
+
+  const showCut=g('chk-show-single')&&g('chk-show-single').checked;
+  lp.style.outline='';
+  if(showCut){
+    if(cutClass==='cut-dashed'||cutClass==='cut-both') lp.style.outline='2px dashed #9CADB8';
+    else if(cutClass==='cut-solid') lp.style.outline='1.5px solid #B0BEC5';
+  }
+
+  const specs=[
+    ['📏','1.5″ × 1.0″'],
+    ['📄','A4 Paper'],
+    ['✂', cutLabel||'No Guide'],
+    ['⊞', v('f-cols')+'×'+v('f-rows')+' Grid'],
+    ['🎨', THEMES[activeTheme]?.name||'Navy'],
+  ];
+  const sr=g('specs-row');
+  if(sr) sr.innerHTML=specs.map(([i,t])=>`<div class="chip"><span class="chip-icon">${i}</span><span>${t}</span></div>`).join('');
+}
+
+/* ── A4 sheet ── */
+function updateA4(){
+  const cols=parseInt(v('f-cols'))||5;
+  const rows=parseInt(v('f-rows'))||11;
+  const total=cols*rows;
+  const inner=g('a4-inner');
+  if(!inner) return;
+
+  const labelW=Math.floor((794-74)/cols);
+  const labelH=Math.floor((1123-66)/rows);
+
+  inner.style.gridTemplateColumns=`repeat(${cols},${labelW}px)`;
+  inner.style.gridAutoRows=`${labelH}px`;
+
+  const light=g('chk-light')&&g('chk-light').checked;
+  inner.className='a4-inner '+(cutClass||'')+(light?' light-guides':'');
+
+  let html='';
+  for(let i=0;i<total;i++) html+=`<div class="a4-label">${labelHTML()}</div>`;
+  inner.innerHTML=html;
+
+  const grand=total*sheetsCount;
+  ['s-per','m-per'].forEach(id=>{if(g(id))g(id).textContent=total;});
+  ['s-sheets','m-sheets'].forEach(id=>{if(g(id))g(id).textContent=sheetsCount;});
+  ['s-total','m-total'].forEach(id=>{if(g(id))g(id).textContent=grand;});
+  ['s-cut','m-cut'].forEach(id=>{if(g(id))g(id).textContent=cutLabel||'None';});
+  if(g('cnt-badge')) g('cnt-badge').textContent=total;
+  if(g('sheet-meta')) g('sheet-meta').textContent=`A4 · ${cols} × ${rows} Grid · ${total} Labels`;
+
+  document.documentElement.style.setProperty('--print-cols',cols);
+}
+
+/* ── Char counters ── */
+function charCounts(){
+  [[g('f-biz'),g('cc1'),30],[g('f-product'),g('cc2'),40]].forEach(([f,c,m])=>{
+    if(!f||!c) return;
+    const l=f.value.length;
+    c.textContent=l+'/'+m;
+    c.className='char-count'+(l>m?' over':l>m*.8?' warn':' ok');
+  });
+}
+
+/* ── Master update ── */
+function update(){ charCounts();updateSingle();updateA4(); }
+
+/* ── Zoom ── */
+function setZoom(z){
+  zoom=Math.max(50,Math.min(500,z));
+  const lp=g('label-preview');
+  if(lp) lp.style.transform=`scale(${zoom/100})`;
+  if(g('zoom-disp')) g('zoom-disp').textContent=zoom+'%';
+  if(g('zoom-range')) g('zoom-range').value=zoom;
+}
+function adjZoom(d){ setZoom(zoom+d); }
+
+/* ── Tabs ── */
+function switchTab(id,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  g('tab-'+id).classList.add('active');
+}
+
+/* ── Cut style ── */
+function setCut(el){
+  document.querySelectorAll('.cut-opt').forEach(o=>o.classList.remove('active'));
+  el.classList.add('active');
+  cutClass=el.dataset.val;
+  cutLabel=el.dataset.label;
+  update();
+}
+
+/* ── Sheet quantity ── */
+function adjSheets(d){
+  sheetsCount=Math.max(1,Math.min(99,sheetsCount+d));
+  if(g('sheets-display')) g('sheets-display').textContent=sheetsCount;
+  if(g('f-sheets')) g('f-sheets').value=sheetsCount;
+  update();
+}
+
+/* ── Modal ── */
+function openModal(){ update();g('modal').classList.add('open'); }
+function closeModal(){ g('modal').classList.remove('open'); }
+
+/* ── Print ── */
+function doPrint(){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  g('tab-sheet').classList.add('active');
+  setTimeout(()=>{ window.print(); toast('🖨 Print dialog opened','copper'); },180);
+}
+
+/* ── Reset ── */
+function resetForm(){
+  const defaults=[
+    ['f-biz','My Simple Business'],['f-product','Premium Herbal Tea · 100g'],
+    ['f-mfg','01-Mar-2025'],['f-exp','28-Feb-2027'],
+    ['f-batch','BT-2025-001234'],['f-web','www.mysimplebusiness.com'],
+    ['f-coname','My Simple Business Pvt Ltd'],
+    ['f-addr','No. 45, High Street, Colombo 03, LK'],
+    ['f-tel','+94 11 234 5678'],['f-cols','5'],['f-rows','11'],
+  ];
+  defaults.forEach(([id,val])=>{ const el=g(id);if(el)el.value=val; });
+  sheetsCount=1;
+  if(g('sheets-display')) g('sheets-display').textContent='1';
+  applyTheme(0);
+  setCut(document.querySelector('.cut-opt[data-val="cut-dashed"]'));
+  update();
+  toast('↺ Reset to sample data');
+}
+
+/* ── Keyboard zoom on preview ── */
+document.getElementById('tab-single').addEventListener('wheel',e=>{
+  if(e.ctrlKey||e.metaKey){e.preventDefault();adjZoom(e.deltaY<0?25:-25);}
+},{passive:false});
+
+/* ── Init ── */
+buildSwatches();
+update();
+</script>
+</body>
+</html>
