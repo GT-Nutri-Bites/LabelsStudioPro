@@ -1349,10 +1349,16 @@ function applyFontFamily(family){
   update();
 }
 
-function applyFontScale(percent){
-  fontScale = parseInt(percent) / 100;
+function applyFontScale(value){
+  const numValue = parseInt(value, 10);
+  if(isNaN(numValue)) return;
+  // Snap to nearest step of 5
+  const snappedValue = Math.round(numValue / 5) * 5;
+  const clampedValue = Math.max(70, Math.min(130, snappedValue));
+  fontScale = clampedValue / 100;
   document.documentElement.style.setProperty('--lbl-font-scale', fontScale);
-  if(g('font-scale-display')) g('font-scale-display').textContent = percent + '%';
+  if(g('font-scale-display')) g('font-scale-display').textContent = clampedValue + '%';
+  if(g('f-font-scale')) g('f-font-scale').value = clampedValue;
   update();
 }
 
@@ -1671,10 +1677,11 @@ function applyConfig(config){
     applyFontFamily(fontFamily);
   }
   if(config.fontScale !== undefined){
-    fontScale = config.fontScale;
-    const scalePercent = Math.round(fontScale * 100);
-    if(g('f-font-scale')) g('f-font-scale').value = scalePercent;
-    applyFontScale(scalePercent);
+    // Snap to nearest valid step of 5 when loading
+    const rawPercent = Math.round(config.fontScale * 100);
+    const snappedPercent = Math.round(rawPercent / 5) * 5;
+    const clampedPercent = Math.max(70, Math.min(130, snappedPercent));
+    applyFontScale(clampedPercent);
   }
   
   update();
