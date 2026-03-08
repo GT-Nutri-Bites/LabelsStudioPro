@@ -1175,6 +1175,7 @@ function buildSwatches(){
 }
 
 function applyTheme(idx){
+  if(idx<0||idx>=THEMES.length) return;
   activeTheme=idx;
   const th=THEMES[idx];
   document.documentElement.style.setProperty('--lbl-primary',th.primary);
