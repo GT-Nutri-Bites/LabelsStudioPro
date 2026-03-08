@@ -1600,8 +1600,8 @@ function handleLogoUpload(event){
     return;
   }
 
-  if(!file.type.startsWith('image/')){
-    toast('❌ Please select an image file', 'red');
+  if(!file.type.startsWith('image/') || file.type === 'image/svg+xml'){
+    toast('❌ Please select a PNG or JPG image', 'red');
     return;
   }
 
@@ -1703,7 +1703,7 @@ function labelHTML(){
   const qrText = getQRText();
   const qrEl = qrText ? `<div class="lbl-qr">${qrSVG(qrText)}</div>` : '';
   return `${crops}
-    <div class="lr lr-biz">${logoDataUrl ? '<img src="'+logoDataUrl+'" class="lbl-logo" alt="Brand logo"/>' : ''}${biz}</div>
+    <div class="lr lr-biz">${logoDataUrl && logoDataUrl.startsWith('data:image/') ? '<img src="'+logoDataUrl+'" class="lbl-logo" alt="Brand logo"/>' : ''}${biz}</div>
     <div class="lr lr-product">${prod}${wt ? ' · '+wt : ''}</div>
     <div class="lr lr-dates"><span class="mfg">Mfg:&nbsp;${mfg}</span>&nbsp;|&nbsp;<span class="exp">Exp:&nbsp;${exp}</span></div>
     <div class="lr lr-batch">Batch:&nbsp;${batch}</div>
@@ -1747,9 +1747,9 @@ function updateSingle(){
   const specs=[
     ['📏','1.5″ × 1.0″'],
     ['📄','A4 Paper'],
-    ['✂', cutLabel||'No Guide'],
-    ['⊞', v('f-cols')+'×'+v('f-rows')+' Grid'],
-    ['🎨', THEMES[activeTheme]?.name||'Navy'],
+    ['✂', esc(cutLabel||'No Guide')],
+    ['⊞', esc(v('f-cols'))+'×'+esc(v('f-rows'))+' Grid'],
+    ['🎨', esc(THEMES[activeTheme]?.name||'Navy')],
   ];
   const sr=g('specs-row');
   if(sr) sr.innerHTML=specs.map(([i,t])=>`<div class="chip"><span class="chip-icon">${i}</span><span>${t}</span></div>`).join('');
@@ -2110,8 +2110,8 @@ function applyConfig(config){
     applyFontScale(clampedPercent);
   }
 
-  // Logo
-  if(config.logo){
+  // Logo (validate data URL starts with data:image/)
+  if(config.logo && typeof config.logo === 'string' && config.logo.startsWith('data:image/') && !config.logo.startsWith('data:image/svg')){
     logoDataUrl = config.logo;
     const img = g('logo-preview-img');
     const placeholder = g('logo-placeholder');
