@@ -556,6 +556,11 @@ select{
   height:10px;font-family:var(--mono);letter-spacing:.02em;
   flex:1;border-top:none;
 }
+.lbl-qr{
+  position:absolute;right:2px;top:26px;width:26px;height:26px;
+  background:#fff;padding:1px;border:0.5px solid rgba(0,0,0,0.1);
+}
+.lbl-qr svg{width:100%;height:100%;display:block;color:var(--lbl-primary);}
 
 /* Preview specs chips */
 .spec-chips{
@@ -1080,6 +1085,19 @@ select{
           <input type="text" id="f-batch" value="BT-2025-001234" oninput="update()" placeholder="e.g. BT-2025-001234"/>
           <div class="field-hint">Unique code for product traceability &amp; recall management</div>
         </div>
+        <div class="field">
+          <div class="field-label">QR Code <span style="font-weight:400;color:var(--slate-l);font-size:.7rem;">(optional)</span></div>
+          <select id="f-qr-source" onchange="updateQRField();update()">
+            <option value="">No QR Code</option>
+            <option value="website">Website URL</option>
+            <option value="batch">Batch Number</option>
+            <option value="custom">Custom Text</option>
+          </select>
+        </div>
+        <div class="field" id="qr-custom-field" style="display:none">
+          <div class="field-label">Custom QR Text</div>
+          <input type="text" id="f-qr-custom" oninput="update()" placeholder="Enter text to encode"/>
+        </div>
       </div>
 
       <div class="sec-divider"></div>
@@ -1558,6 +1576,60 @@ function clearLogo(){
   update();
 }
 
+/* ── QR Code helpers ── */
+function updateQRField(){
+  const src = v('f-qr-source');
+  const field = g('qr-custom-field');
+  if(field) field.style.display = src === 'custom' ? '' : 'none';
+}
+
+function getQRText(){
+  const src = v('f-qr-source');
+  if(!src) return '';
+  if(src === 'website') return v('f-web') || '';
+  if(src === 'batch') return v('f-batch') || '';
+  if(src === 'custom') return v('f-qr-custom') || '';
+  return '';
+}
+
+/**
+ * Generate a decorative QR-style SVG pattern for a given text.
+ * NOTE: This is a visual identifier, not a scannable QR code.
+ * It uses a djb2 hash seeded into a linear congruential generator (LCG)
+ * to produce a deterministic dot pattern within standard QR finder frames.
+ * @param {string} text - The text to encode visually
+ * @returns {string} An SVG string, or '' if text is empty
+ */
+function qrSVG(text){
+  if(!text) return '';
+  const gridSize=21, px=1;
+  let pathData='';
+  // Draw a 7×7 QR finder pattern at grid offset (ox, oy)
+  function addFinder(ox,oy){
+    for(let row=0;row<7;row++) for(let col=0;col<7;col++){
+      if((row===0||row===6||col===0||col===6)||(row>=2&&row<=4&&col>=2&&col<=4))
+        pathData+=`M${(ox+col)*px},${(oy+row)*px}h${px}v${px}h-${px}z`;
+    }
+  }
+  addFinder(0,0);addFinder(gridSize-7,0);addFinder(0,gridSize-7);
+  // Timing patterns (alternating dots along row 6 and col 6)
+  for(let i=8;i<gridSize-8;i++) if(i%2===0){
+    pathData+=`M${i*px},${6*px}h${px}v${px}h-${px}z`;
+    pathData+=`M${6*px},${i*px}h${px}v${px}h-${px}z`;
+  }
+  // djb2 hash of input text
+  let hash=5381;
+  for(let i=0;i<text.length;i++) hash=((hash<<5)+hash+text.charCodeAt(i))&0xFFFFFFFF;
+  // LCG (glibc constants) seeded from hash to fill data area deterministically
+  let seed=Math.abs(hash);
+  for(let row=0;row<gridSize;row++) for(let col=0;col<gridSize;col++){
+    if((row<9&&col<9)||(row<9&&col>=gridSize-8)||(row>=gridSize-8&&col<9)||row===6||col===6) continue;
+    seed=(seed*1103515245+12345)&0x7FFFFFFF; // mask to 31 bits to keep positive
+    if((seed>>16)&1) pathData+=`M${col*px},${row*px}h${px}v${px}h-${px}z`;
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${gridSize} ${gridSize}" style="shape-rendering:crispEdges"><path d="${pathData}"/></svg>`;
+}
+
 /* ── Build label HTML ── */
 function labelHTML(){
   const biz   = esc(v('f-biz'))    || 'Business Name';
@@ -1572,6 +1644,8 @@ function labelHTML(){
   const ingr  = esc(v('f-ingredients')) || '';
   const wt    = esc(v('f-weight')) || '';
   const crops = `<span class="cm cm-tl"></span><span class="cm cm-tr"></span><span class="cm cm-bl"></span><span class="cm cm-br"></span>`;
+  const qrText = getQRText();
+  const qrEl = qrText ? `<div class="lbl-qr">${qrSVG(qrText)}</div>` : '';
   return `${crops}
     <div class="lr lr-biz">${logoDataUrl ? '<img src="'+logoDataUrl+'" class="lbl-logo" alt="Brand logo"/>' : ''}${biz}</div>
     <div class="lr lr-product">${prod}${wt ? ' · '+wt : ''}</div>
@@ -1580,7 +1654,8 @@ function labelHTML(){
     ${ingr ? `<div class="lr lr-ingr">${ingr}</div>` : ''}
     <div class="lr lr-web">${web}</div>
     <div class="lr lr-company"><span>${con}</span><span>${addr}</span></div>
-    <div class="lr lr-contact">Tel:&nbsp;${tel}</div>`;
+    <div class="lr lr-contact">Tel:&nbsp;${tel}</div>
+    ${qrEl}`;
 }
 
 /* ── Single preview ── */
@@ -1792,6 +1867,7 @@ function resetForm(){
     ['f-addr','No. 45, High Street, Colombo 03, LK'],
     ['f-tel','+94 11 234 5678'],['f-cols','5'],['f-rows','11'],
     ['f-ingredients',''],['f-weight',''],
+    ['f-qr-source',''],['f-qr-custom',''],
   ];
   defaults.forEach(([id,val])=>{ const el=g(id);if(el)el.value=val; });
   sheetsCount=1;
@@ -1807,6 +1883,7 @@ function resetForm(){
   if(g('f-font-scale')) g('f-font-scale').value = 100;
   applyFontScale(100);
   clearLogo();
+  updateQRField();
   update();
   toast('↺ Reset to sample data');
 }
@@ -1867,6 +1944,8 @@ function getCurrentConfig(){
     fontScale: fontScale,
     customPrimary: g('custom-primary')?.value || '',
     customAccent: g('custom-accent')?.value || '',
+    qrSource: v('f-qr-source'),
+    qrCustom: v('f-qr-custom'),
     logo: logoDataUrl,
     savedAt: new Date().toISOString()
   };
@@ -1890,6 +1969,8 @@ function applyConfig(config){
     ['f-weight', config.weight],
     ['f-cols', config.columns],
     ['f-rows', config.rows],
+    ['f-qr-source', config.qrSource],
+    ['f-qr-custom', config.qrCustom],
   ];
   
   fieldMap.forEach(([id, val]) => {
@@ -1962,7 +2043,8 @@ function applyConfig(config){
   } else {
     clearLogo();
   }
-  
+
+  updateQRField();
   update();
 }
 
