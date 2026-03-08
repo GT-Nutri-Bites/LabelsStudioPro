@@ -75,6 +75,42 @@
   --lbl-font-scale: 1;
 }
 
+/* ═══════════════════════════════════════════════════════════
+   DARK MODE OVERRIDES
+═══════════════════════════════════════════════════════════ */
+body.dark {
+  --ivory: #1a1a2e;
+  --ivory-2: #16213e;
+  --ivory-3: #0f3460;
+  --parchment: #16213e;
+  --ink: #e0e0e0;
+  --ink-soft: #b0b0b0;
+  --border: rgba(255,255,255,0.1);
+  --border-l: rgba(255,255,255,0.06);
+  --white: #1e2a4a;
+  --shadow-sm: 0 1px 4px rgba(0,0,0,.2);
+  --shadow: 0 2px 14px rgba(0,0,0,.3);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,.4);
+  --shadow-xl: 0 20px 80px rgba(0,0,0,.5);
+  --slate: #8BA4B8;
+  --slate-l: #B8CDD9;
+}
+body.dark input, body.dark textarea, body.dark select {
+  background: #0f3460;
+  color: #e0e0e0;
+  border-color: rgba(255,255,255,0.15);
+}
+body.dark .sec-hd { color: #e0e0e0; }
+body.dark .field-label { color: #c0c0c0; }
+body.dark .field-hint { color: #888; }
+body.dark .info-card { background: #0f3460; border-color: rgba(255,255,255,0.1); color: #b0b0b0; }
+body.dark .preview-panel { background: #1a1a2e; }
+body.dark .single-view { background: #1a1a2e; }
+body.dark .a4-view { background: #1a1a2e; }
+body.dark .chip { background: #16213e; border-color: rgba(255,255,255,0.1); color: #b0b0b0; }
+body.dark .preview-label { color: #888; }
+body.dark .sec-divider { border-color: rgba(255,255,255,0.06); }
+
 html,body{height:100%;font-size:15px;-webkit-font-smoothing:antialiased;}
 body{font-family:var(--font);background:var(--ivory);color:var(--ink);display:flex;flex-direction:column;overflow-x:hidden;}
 
@@ -847,6 +883,7 @@ select{
       <div class="live-dot"></div>
       <span class="live-text">LIVE</span>
     </div>
+    <button class="btn btn-ghost" id="dark-mode-btn" onclick="toggleDarkMode()" title="Toggle dark mode">🌙 Dark</button>
     <button class="btn btn-ghost" onclick="resetForm()">↺ Reset</button>
     <button class="btn btn-navy" onclick="openModal()">⊞ Print Summary</button>
     <button class="btn btn-copper" onclick="doPrint()">🖨 Print</button>
@@ -1919,6 +1956,20 @@ if(navigator.platform.toUpperCase().indexOf('MAC') >= 0){
   const hint = g('zoom-hint');
   if(hint) hint.textContent = '⌘+Scroll to zoom · Label actual size: 1.5 in × 1 in';
 }
+/* ── Dark Mode ── */
+function toggleDarkMode(){
+  const isDark = document.body.classList.toggle('dark');
+  const btn = g('dark-mode-btn');
+  if(btn) btn.innerHTML = isDark ? '☀️ Light' : '🌙 Dark';
+  try { localStorage.setItem('labelStudioPro_darkMode', isDark); } catch(e){}
+}
+try {
+  if(localStorage.getItem('labelStudioPro_darkMode') === 'true'){
+    document.body.classList.add('dark');
+    const btn = g('dark-mode-btn');
+    if(btn) btn.innerHTML = '☀️ Light';
+  }
+} catch(e){}
 </script>
 </body>
 </html>
