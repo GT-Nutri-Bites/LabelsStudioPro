@@ -1612,9 +1612,14 @@ function handleLogoUpload(event){
   const reader = new FileReader();
   reader.onload = function(e){
     const result = e.target.result;
-    // Validate data URL format
-    if(!result || !result.startsWith('data:image/') || result.startsWith('data:image/svg')){
+    // Validate data URL format - block SVG images for security
+    if(!result || !result.startsWith('data:image/')){
       toast('❌ Invalid image format', 'red');
+      return;
+    }
+    // Explicitly reject SVG to prevent XSS attacks
+    if(result.startsWith('data:image/svg+xml') || result.startsWith('data:image/svg ')){
+      toast('❌ SVG images are not allowed', 'red');
       return;
     }
     logoDataUrl = result;
@@ -1762,7 +1767,7 @@ function updateSingle(){
     ['📄','A4 Paper'],
     ['✂', esc(cutLabel||'No Guide')],
     ['⊞', esc(v('f-cols'))+'×'+esc(v('f-rows'))+' Grid'],
-    ['🎨', esc(activeTheme >= 0 && THEMES[activeTheme] ? THEMES[activeTheme].name : 'Custom')],
+    ['🎨', esc(THEMES[activeTheme]?.name || 'Custom')],
   ];
   const sr=g('specs-row');
   if(sr) sr.innerHTML=specs.map(([i,t])=>`<div class="chip"><span class="chip-icon">${i}</span><span>${t}</span></div>`).join('');
@@ -2312,7 +2317,7 @@ function handleFileImport(event){
         return;
       }
       
-      // Sanitize string fields to prevent XSS
+      // Ensure string fields are proper strings (XSS escaping happens in labelHTML() via esc() function)
       const stringFields = ['business', 'product', 'mfgDate', 'expDate', 'batch', 'website', 
                            'companyName', 'address', 'telephone', 'ingredients', 'weight', 'qrCustom'];
       stringFields.forEach(field => {
