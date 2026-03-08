@@ -383,22 +383,41 @@ select{
 /* ── Single Preview ── */
 .single-view{
   flex:1;overflow:auto;
-  display:flex;align-items:center;justify-content:center;
+  display:flex;align-items:flex-start;justify-content:center;
   padding:48px 40px;
   background:
     radial-gradient(circle at 15px 15px, rgba(12,27,46,.03) 1px, transparent 0),
     radial-gradient(circle at 55px 55px, rgba(12,27,46,.03) 1px, transparent 0);
   background-size:70px 70px;
   background-color:var(--ivory-2);
+  min-height:0;
 }
-.single-center{text-align:center;display:flex;flex-direction:column;align-items:center;gap:0;}
+.single-center{
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:0;
+  padding-top:20px;
+  padding-bottom:40px;
+}
 .preview-label{
   font-size:.65rem;font-family:var(--mono);letter-spacing:.12em;
   text-transform:uppercase;color:var(--slate-l);
   margin-bottom:18px;display:flex;align-items:center;gap:8px;
+  flex-shrink:0;
 }
 .preview-label::before,.preview-label::after{
   content:'';display:block;width:30px;height:1px;background:var(--slate-xl);
+}
+
+/* Zoom container wraps label-card to handle proper scaling */
+.zoom-container{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:all .3s cubic-bezier(.4,0,.2,1);
+  flex-shrink:0;
 }
 
 .label-card{
@@ -407,7 +426,7 @@ select{
   box-shadow:0 12px 48px rgba(12,27,46,.22),0 2px 8px rgba(12,27,46,.12);
   border-radius:2px;font-family:var(--font);
   position:relative;flex-shrink:0;
-  transform-origin:top center;
+  transform-origin:center center;
   transition:transform .3s cubic-bezier(.4,0,.2,1);
 }
 
@@ -458,7 +477,8 @@ select{
 /* Preview specs chips */
 .spec-chips{
   display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
-  margin-top:28px;
+  margin-top:24px;
+  flex-shrink:0;
 }
 .chip{
   background:var(--white);border:1px solid var(--border);
@@ -468,6 +488,62 @@ select{
   box-shadow:var(--shadow-sm);
 }
 .chip-icon{font-size:.8rem;}
+
+/* ── Configuration Management ── */
+.config-panel{
+  background:linear-gradient(135deg,var(--navy-2),var(--navy-3));
+  border-radius:var(--r2);margin:0 16px 16px;padding:14px 16px;
+  border:1px solid rgba(255,255,255,.08);
+}
+.config-title{
+  font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:rgba(255,255,255,.85);margin-bottom:10px;display:flex;align-items:center;gap:6px;
+}
+.config-title::before{content:'💾';font-size:.75rem;}
+.config-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.config-btn{
+  flex:1;min-width:70px;padding:8px 10px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+  border-radius:var(--r);color:rgba(255,255,255,.8);
+  font-size:.7rem;font-weight:600;cursor:pointer;
+  transition:all .18s;display:flex;align-items:center;justify-content:center;gap:5px;
+}
+.config-btn:hover{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.2);}
+.config-btn.primary{
+  background:linear-gradient(135deg,var(--teal-l),var(--teal-d));
+  border-color:transparent;color:#fff;
+}
+.config-btn.primary:hover{box-shadow:0 2px 12px rgba(10,126,140,.4);}
+.config-select{
+  width:100%;margin-top:8px;padding:8px 10px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+  border-radius:var(--r);color:rgba(255,255,255,.85);
+  font-size:.72rem;cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='rgba(255,255,255,0.5)'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;
+}
+.config-select:focus{outline:none;border-color:var(--teal);}
+.config-select option{background:var(--navy);color:#fff;}
+.config-hint{font-size:.62rem;color:rgba(255,255,255,.5);margin-top:6px;font-style:italic;}
+
+/* Confirmation Dialog */
+.confirm-overlay{
+  position:fixed;inset:0;background:rgba(12,27,46,.6);
+  display:flex;align-items:center;justify-content:center;
+  z-index:1000;opacity:0;pointer-events:none;
+  transition:opacity .2s;
+}
+.confirm-overlay.show{opacity:1;pointer-events:auto;}
+.confirm-box{
+  background:var(--white);border-radius:var(--r2);
+  padding:24px;max-width:400px;width:90%;
+  box-shadow:var(--shadow-xl);transform:scale(.95);
+  transition:transform .2s;
+}
+.confirm-overlay.show .confirm-box{transform:scale(1);}
+.confirm-title{font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:8px;}
+.confirm-msg{font-size:.85rem;color:var(--slate);margin-bottom:20px;line-height:1.5;}
+.confirm-actions{display:flex;gap:10px;justify-content:flex-end;}
 
 /* ── Zoom Bar ── */
 .zoom-bar{
@@ -482,6 +558,7 @@ select{
   transition:all .15s;color:var(--ink);
 }
 .zoom-btn:hover{border-color:var(--teal);color:var(--teal);}
+.zoom-btn:active{transform:scale(.95);}
 .zoom-value{
   font-family:var(--mono);font-size:.78rem;color:var(--ink-soft);
   width:46px;text-align:center;font-weight:500;
@@ -772,6 +849,26 @@ select{
       </div>
     </div>
 
+    <!-- Configuration Management Panel -->
+    <div class="config-panel">
+      <div class="config-title">Save & Load Configurations</div>
+      <div class="config-actions">
+        <button class="config-btn primary" onclick="saveConfig()" title="Save current configuration">
+          <span>💾</span> Save
+        </button>
+        <button class="config-btn" onclick="exportConfig()" title="Export configuration as JSON file">
+          <span>📤</span> Export
+        </button>
+        <button class="config-btn" onclick="importConfig()" title="Import configuration from JSON file">
+          <span>📥</span> Import
+        </button>
+      </div>
+      <select class="config-select" id="saved-configs" onchange="loadSelectedConfig()" aria-label="Load saved configuration">
+        <option value="">— Load saved configuration —</option>
+      </select>
+      <div class="config-hint">Auto-saves to browser storage · Export for backup</div>
+    </div>
+
     <div class="sidebar-body">
 
       <!-- ① BRAND -->
@@ -997,19 +1094,21 @@ select{
 
     <!-- Single Label Preview -->
     <div class="tab-content active" id="tab-single">
-      <div class="single-view">
+      <div class="single-view" id="single-view">
         <div class="single-center">
           <div class="preview-label">Actual Print Size · 1.5″ × 1.0″</div>
-          <div id="label-preview" class="label-card" style="transform:scale(2.5);margin-bottom:130px;"></div>
-          <div id="specs-row" class="spec-chips" style="margin-top:150px;"></div>
+          <div class="zoom-container" id="zoom-container">
+            <div id="label-preview" class="label-card"></div>
+          </div>
+          <div id="specs-row" class="spec-chips"></div>
         </div>
       </div>
       <div class="zoom-bar">
-        <button class="zoom-btn" onclick="adjZoom(-25)">−</button>
+        <button class="zoom-btn" onclick="adjZoom(-25)" title="Zoom Out (−25%)">−</button>
         <div class="zoom-value" id="zoom-disp">250%</div>
-        <button class="zoom-btn" onclick="adjZoom(+25)">+</button>
-        <input type="range" class="zoom-slider" id="zoom-range" min="50" max="500" value="250" step="25" oninput="setZoom(+this.value)"/>
-        <span class="zoom-hint">Scroll to zoom · Label actual size: 1.5 in × 1 in</span>
+        <button class="zoom-btn" onclick="adjZoom(+25)" title="Zoom In (+25%)">+</button>
+        <input type="range" class="zoom-slider" id="zoom-range" min="50" max="500" value="250" step="25" oninput="setZoom(+this.value)" title="Drag to adjust zoom"/>
+        <span class="zoom-hint" id="zoom-hint">Ctrl+Scroll to zoom · Label actual size: 1.5 in × 1 in</span>
       </div>
     </div>
 
@@ -1119,6 +1218,21 @@ select{
   <span id="toast-msg">Done!</span>
 </div>
 
+<!-- CONFIRM DIALOG -->
+<div class="confirm-overlay" id="confirm-dialog">
+  <div class="confirm-box">
+    <div class="confirm-title" id="confirm-title">Confirm Action</div>
+    <div class="confirm-msg" id="confirm-msg">Are you sure?</div>
+    <div class="confirm-actions">
+      <button class="btn btn-solid" onclick="closeConfirm(false)">Cancel</button>
+      <button class="btn btn-teal" id="confirm-ok" onclick="closeConfirm(true)">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- HIDDEN FILE INPUT FOR IMPORT -->
+<input type="file" id="import-file" accept=".json" style="display:none" onchange="handleFileImport(event)"/>
+
 <!-- ═══════════════════════════════════════════════════════════
      JAVASCRIPT
 ═══════════════════════════════════════════════════════════ -->
@@ -1211,9 +1325,25 @@ function labelHTML(){
 /* ── Single preview ── */
 function updateSingle(){
   const lp=g('label-preview');
+  const zc=g('zoom-container');
   if(!lp) return;
+  
   lp.innerHTML=labelHTML();
-  lp.style.transform=`scale(${zoom/100})`;
+  
+  // Apply zoom transform to the label
+  const scale=zoom/100;
+  lp.style.transform=`scale(${scale})`;
+  
+  // Resize container to match scaled dimensions
+  if(zc){
+    const baseW=216, baseH=144;
+    const scaledW=baseW*scale;
+    const scaledH=baseH*scale;
+    zc.style.width=scaledW+'px';
+    zc.style.height=scaledH+'px';
+    zc.style.minWidth=scaledW+'px';
+    zc.style.minHeight=scaledH+'px';
+  }
 
   const showCut=g('chk-show-single')&&g('chk-show-single').checked;
   lp.style.outline='';
@@ -1282,7 +1412,24 @@ function update(){ charCounts();updateSingle();updateA4(); }
 function setZoom(z){
   zoom=Math.max(50,Math.min(500,z));
   const lp=g('label-preview');
-  if(lp) lp.style.transform=`scale(${zoom/100})`;
+  const zc=g('zoom-container');
+  const scale=zoom/100;
+  
+  if(lp){
+    lp.style.transform=`scale(${scale})`;
+  }
+  
+  // Dynamically size container to accommodate scaled label
+  if(zc){
+    const baseW=216, baseH=144;
+    const scaledW=baseW*scale;
+    const scaledH=baseH*scale;
+    zc.style.width=scaledW+'px';
+    zc.style.height=scaledH+'px';
+    zc.style.minWidth=scaledW+'px';
+    zc.style.minHeight=scaledH+'px';
+  }
+  
   if(g('zoom-disp')) g('zoom-disp').textContent=zoom+'%';
   if(g('zoom-range')) g('zoom-range').value=zoom;
 }
@@ -1340,8 +1487,316 @@ function resetForm(){
   if(g('sheets-display')) g('sheets-display').textContent='1';
   applyTheme(0);
   setCut(document.querySelector('.cut-opt[data-val="cut-dashed"]'));
+  setZoom(250);
   update();
   toast('↺ Reset to sample data');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CONFIGURATION MANAGEMENT
+═══════════════════════════════════════════════════════════ */
+const STORAGE_KEY = 'labelStudioPro_configs';
+const AUTO_SAVE_KEY = 'labelStudioPro_autosave';
+let confirmCallback = null;
+
+/* Get all saved configurations */
+function getSavedConfigs(){
+  try {
+    const data = localStorage.getItem(STORAGE_KEY);
+    return data ? JSON.parse(data) : {};
+  } catch(e) {
+    console.error('Error loading configs:', e);
+    return {};
+  }
+}
+
+/* Save configurations to localStorage */
+function saveConfigsToStorage(configs){
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(configs));
+    return true;
+  } catch(e) {
+    console.error('Error saving configs:', e);
+    return false;
+  }
+}
+
+/* Get current form configuration */
+function getCurrentConfig(){
+  return {
+    business: v('f-biz'),
+    product: v('f-product'),
+    mfgDate: v('f-mfg'),
+    expDate: v('f-exp'),
+    batch: v('f-batch'),
+    website: v('f-web'),
+    companyName: v('f-coname'),
+    address: v('f-addr'),
+    telephone: v('f-tel'),
+    columns: v('f-cols'),
+    rows: v('f-rows'),
+    sheets: sheetsCount,
+    theme: activeTheme,
+    cutStyle: cutClass,
+    cutLabel: cutLabel,
+    lightGuides: g('chk-light')?.checked ?? true,
+    showSingleCut: g('chk-show-single')?.checked ?? false,
+    zoom: zoom,
+    savedAt: new Date().toISOString()
+  };
+}
+
+/* Apply a configuration to the form */
+function applyConfig(config){
+  if(!config) return;
+  
+  const fieldMap = [
+    ['f-biz', config.business],
+    ['f-product', config.product],
+    ['f-mfg', config.mfgDate],
+    ['f-exp', config.expDate],
+    ['f-batch', config.batch],
+    ['f-web', config.website],
+    ['f-coname', config.companyName],
+    ['f-addr', config.address],
+    ['f-tel', config.telephone],
+    ['f-cols', config.columns],
+    ['f-rows', config.rows],
+  ];
+  
+  fieldMap.forEach(([id, val]) => {
+    const el = g(id);
+    if(el && val !== undefined) el.value = val;
+  });
+  
+  // Sheets count
+  if(config.sheets !== undefined){
+    sheetsCount = config.sheets;
+    if(g('sheets-display')) g('sheets-display').textContent = sheetsCount;
+    if(g('f-sheets')) g('f-sheets').value = sheetsCount;
+  }
+  
+  // Theme
+  if(config.theme !== undefined){
+    applyTheme(config.theme);
+  }
+  
+  // Cut style
+  if(config.cutStyle !== undefined){
+    const cutEl = document.querySelector(`.cut-opt[data-val="${config.cutStyle}"]`);
+    if(cutEl){
+      cutClass = config.cutStyle;
+      cutLabel = config.cutLabel || cutEl.dataset.label;
+      document.querySelectorAll('.cut-opt').forEach(o => o.classList.remove('active'));
+      cutEl.classList.add('active');
+    }
+  }
+  
+  // Checkboxes
+  if(g('chk-light')) g('chk-light').checked = config.lightGuides !== false;
+  if(g('chk-show-single')) g('chk-show-single').checked = config.showSingleCut === true;
+  
+  // Zoom
+  if(config.zoom !== undefined){
+    setZoom(config.zoom);
+  }
+  
+  update();
+}
+
+/* Show confirmation dialog */
+function showConfirm(title, message, callback){
+  g('confirm-title').textContent = title;
+  g('confirm-msg').textContent = message;
+  confirmCallback = callback;
+  g('confirm-dialog').classList.add('show');
+}
+
+/* Close confirmation dialog */
+function closeConfirm(result){
+  g('confirm-dialog').classList.remove('show');
+  if(confirmCallback) {
+    confirmCallback(result);
+    confirmCallback = null;
+  }
+}
+
+/* Update the saved configs dropdown */
+function updateConfigDropdown(){
+  const select = g('saved-configs');
+  if(!select) return;
+  
+  const configs = getSavedConfigs();
+  const names = Object.keys(configs).sort();
+  
+  select.innerHTML = '<option value="">— Load saved configuration —</option>';
+  names.forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    const cfg = configs[name];
+    const date = cfg.savedAt ? new Date(cfg.savedAt).toLocaleDateString() : '';
+    opt.textContent = date ? `${name} (${date})` : name;
+    select.appendChild(opt);
+  });
+}
+
+/* Save current configuration */
+function saveConfig(){
+  const configName = prompt('Enter a name for this configuration:', 'My Label Config');
+  if(!configName || !configName.trim()) return;
+  
+  const name = configName.trim();
+  const configs = getSavedConfigs();
+  
+  const doSave = () => {
+    configs[name] = getCurrentConfig();
+    if(saveConfigsToStorage(configs)){
+      updateConfigDropdown();
+      toast('💾 Configuration saved: ' + name, 'copper');
+    } else {
+      toast('❌ Failed to save configuration', 'red');
+    }
+  };
+  
+  if(configs[name]){
+    showConfirm(
+      'Overwrite Configuration?',
+      `A configuration named "${name}" already exists. Do you want to overwrite it?`,
+      (confirmed) => {
+        if(confirmed) doSave();
+      }
+    );
+  } else {
+    doSave();
+  }
+}
+
+/* Load selected configuration from dropdown */
+function loadSelectedConfig(){
+  const select = g('saved-configs');
+  if(!select || !select.value) return;
+  
+  const name = select.value;
+  const configs = getSavedConfigs();
+  
+  if(configs[name]){
+    applyConfig(configs[name]);
+    toast('📂 Loaded: ' + name, 'copper');
+    select.value = ''; // Reset dropdown
+  }
+}
+
+/* Delete a saved configuration */
+function deleteConfig(name){
+  if(!name) return;
+  
+  showConfirm(
+    'Delete Configuration?',
+    `Are you sure you want to delete "${name}"? This cannot be undone.`,
+    (confirmed) => {
+      if(confirmed){
+        const configs = getSavedConfigs();
+        delete configs[name];
+        saveConfigsToStorage(configs);
+        updateConfigDropdown();
+        toast('🗑 Deleted: ' + name);
+      }
+    }
+  );
+}
+
+/* Export configuration as JSON file */
+function exportConfig(){
+  const config = getCurrentConfig();
+  config.exportedFrom = 'Label Studio Pro';
+  config.version = '1.0';
+  
+  const dataStr = JSON.stringify(config, null, 2);
+  const dataBlob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(dataBlob);
+  
+  const link = document.createElement('a');
+  link.href = url;
+  const filename = (v('f-biz') || 'label-config').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase();
+  link.download = `${filename}-${new Date().toISOString().split('T')[0]}.json`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+  
+  toast('📤 Configuration exported', 'copper');
+}
+
+/* Trigger file input for import */
+function importConfig(){
+  g('import-file').click();
+}
+
+/* Handle file import */
+function handleFileImport(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const config = JSON.parse(e.target.result);
+      
+      // Validate it's a label config by checking for expected structure
+      const hasExpectedFields = config.hasOwnProperty('business') || 
+                                config.hasOwnProperty('product') || 
+                                config.exportedFrom === 'Label Studio Pro';
+      if(!hasExpectedFields){
+        toast('❌ Invalid configuration file', 'red');
+        return;
+      }
+      
+      applyConfig(config);
+      toast('📥 Configuration imported successfully', 'copper');
+    } catch(err) {
+      console.error('Import error:', err);
+      toast('❌ Failed to parse configuration file', 'red');
+    }
+  };
+  reader.readAsText(file);
+  
+  // Reset file input so same file can be imported again
+  event.target.value = '';
+}
+
+/* Auto-save current state periodically */
+function autoSave(){
+  try {
+    localStorage.setItem(AUTO_SAVE_KEY, JSON.stringify(getCurrentConfig()));
+  } catch(e) {
+    // Silent fail for auto-save
+  }
+}
+
+/* Load auto-saved state on page load */
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
+const AUTO_SAVE_MAX_DAYS = 7;
+
+function loadAutoSave(){
+  try {
+    const data = localStorage.getItem(AUTO_SAVE_KEY);
+    if(data){
+      const config = JSON.parse(data);
+      // Only restore if not too old (within 7 days)
+      if(config.savedAt){
+        const saved = new Date(config.savedAt);
+        const now = new Date();
+        const daysDiff = (now - saved) / MS_PER_DAY;
+        if(daysDiff < AUTO_SAVE_MAX_DAYS){
+          applyConfig(config);
+          return true;
+        }
+      }
+    }
+  } catch(e) {
+    // Silent fail
+  }
+  return false;
 }
 
 /* ── Keyboard zoom on preview ── */
@@ -1349,9 +1804,38 @@ document.getElementById('tab-single').addEventListener('wheel',e=>{
   if(e.ctrlKey||e.metaKey){e.preventDefault();adjZoom(e.deltaY<0?25:-25);}
 },{passive:false});
 
+/* ── Auto-save on input changes ── */
+let autoSaveTimer;
+document.querySelectorAll('input, textarea, select').forEach(el => {
+  el.addEventListener('input', () => {
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(autoSave, 2000);
+  });
+  el.addEventListener('change', () => {
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(autoSave, 500);
+  });
+});
+
 /* ── Init ── */
 buildSwatches();
-update();
+updateConfigDropdown();
+
+// Try to restore auto-saved state, otherwise use defaults
+if(!loadAutoSave()){
+  update();
+} else {
+  toast('📋 Restored your previous session', 'default', 2000);
+}
+
+// Apply initial zoom
+setZoom(zoom);
+
+// Update zoom hint for macOS users
+if(navigator.platform.toUpperCase().indexOf('MAC') >= 0){
+  const hint = g('zoom-hint');
+  if(hint) hint.textContent = '⌘+Scroll to zoom · Label actual size: 1.5 in × 1 in';
+}
 </script>
 </body>
 </html>
