@@ -1515,12 +1515,13 @@ function applyFontScale(value){
 
 /* ── Logo management ── */
 let logoDataUrl = '';
+const MAX_LOGO_SIZE = 200 * 1024; // 200KB
 
 function handleLogoUpload(event){
   const file = event.target.files[0];
   if(!file) return;
 
-  if(file.size > 200 * 1024){
+  if(file.size > MAX_LOGO_SIZE){
     toast('❌ Logo too large (max 200KB)', 'red');
     return;
   }
@@ -1572,7 +1573,7 @@ function labelHTML(){
   const wt    = esc(v('f-weight')) || '';
   const crops = `<span class="cm cm-tl"></span><span class="cm cm-tr"></span><span class="cm cm-bl"></span><span class="cm cm-br"></span>`;
   return `${crops}
-    <div class="lr lr-biz">${logoDataUrl ? '<img src="'+logoDataUrl+'" class="lbl-logo" alt=""/>' : ''}${biz}</div>
+    <div class="lr lr-biz">${logoDataUrl ? '<img src="'+logoDataUrl+'" class="lbl-logo" alt="Brand logo"/>' : ''}${biz}</div>
     <div class="lr lr-product">${prod}${wt ? ' · '+wt : ''}</div>
     <div class="lr lr-dates"><span class="mfg">Mfg:&nbsp;${mfg}</span>&nbsp;|&nbsp;<span class="exp">Exp:&nbsp;${exp}</span></div>
     <div class="lr lr-batch">Batch:&nbsp;${batch}</div>
