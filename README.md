@@ -23,15 +23,23 @@ A browser-based, single-page product label designer for creating, customising, a
   - [4. Company Details](#4-company-details)
   - [5. Cutting Guidelines](#5-cutting-guidelines)
   - [6. Sheet Settings](#6-sheet-settings)
-  - [7. Live Label Preview](#7-live-label-preview)
-  - [8. A4 Sheet Preview](#8-a4-sheet-preview)
-  - [9. Zoom Controls](#9-zoom-controls)
-  - [10. Print Summary Modal](#10-print-summary-modal)
-  - [11. Print Functionality](#11-print-functionality)
-  - [12. Reset Form](#12-reset-form)
-  - [13. Toast Notifications](#13-toast-notifications)
-  - [14. Statistics Bar](#14-statistics-bar)
-  - [15. Keyboard & Scroll Interactions](#15-keyboard--scroll-interactions)
+  - [7. Ingredients & Additional Info](#7-ingredients--additional-info)
+  - [8. Dark Mode](#8-dark-mode)
+  - [9. Custom Colour Picker](#9-custom-colour-picker)
+  - [10. Logo Upload](#10-logo-upload)
+  - [11. QR Code Generation](#11-qr-code-generation)
+  - [12. Undo / Redo History](#12-undo--redo-history)
+  - [13. Live Label Preview](#13-live-label-preview)
+  - [14. A4 Sheet Preview](#14-a4-sheet-preview)
+  - [15. Zoom Controls](#15-zoom-controls)
+  - [16. Print Summary Modal](#16-print-summary-modal)
+  - [17. Print Functionality](#17-print-functionality)
+  - [18. Reset Form](#18-reset-form)
+  - [19. Toast Notifications](#19-toast-notifications)
+  - [20. Statistics Bar](#20-statistics-bar)
+  - [21. Keyboard & Scroll Interactions](#21-keyboard--scroll-interactions)
+  - [22. Responsive Mobile Layout](#22-responsive-mobile-layout)
+  - [23. Keyboard Accessibility](#23-keyboard-accessibility)
 - [JavaScript Functions Reference](#javascript-functions-reference)
 - [Technology Stack](#technology-stack)
 - [Project Structure](#project-structure)
@@ -49,10 +57,15 @@ A browser-based, single-page product label designer for creating, customising, a
 
 - Zero dependencies — works offline once loaded
 - Live preview updates as you type
-- 8 professional colour themes
+- 8 professional colour themes + custom colour picker
 - 5 cutting guide styles
 - Print-ready A4 layout at 96 DPI
 - XSS-safe input handling via HTML escaping
+- Dark mode with persistent preference
+- Undo/redo history (Ctrl+Z / Ctrl+Y)
+- Brand logo upload and QR code generation
+- Responsive layout for mobile and tablet
+- Keyboard accessible with ARIA landmarks
 
 ---
 
@@ -156,14 +169,67 @@ Additional options:
 - Label dimensions are fixed at **1.5″ × 1.0″**
 - Grid dimensions auto-calculate to fit the A4 page (794 × 1123 px at 96 DPI)
 
-### 7. Live Label Preview
+### 7. Ingredients & Additional Info
+
+| Field | Details |
+|-------|---------|
+| **Ingredients List** | Textarea (3 rows), comma-separated. Displayed in small print on the label. |
+| **Net Weight / Volume** | Text input for weight or volume declaration (e.g., `100g`, `250ml`). |
+
+- Rendered at a small font size (~4.2 px scaled) to fit the label
+- Shown in a dedicated row on the label below batch/date information
+
+### 8. Dark Mode
+
+- 🌙/☀️ toggle button in the topbar
+- Applies `body.dark` class, overriding CSS custom properties for background, text, borders, and shadows
+- Preference saved to `localStorage` and restored on next visit
+
+### 9. Custom Colour Picker
+
+- **Primary** and **Accent** colour inputs (hex) in the Brand Identity section
+- **Apply** button converts the accent to a lighter variant automatically
+- Works alongside the 8 preset theme swatches
+
+### 10. Logo Upload
+
+| Detail | Value |
+|--------|-------|
+| **Max file size** | 200 KB |
+| **Accepted formats** | Any image type (PNG, JPG, GIF, WebP, etc.) |
+| **Preview** | 60 × 40 px thumbnail with dashed border |
+| **Display on label** | 15 px height in the label header, auto width, `object-fit: contain` |
+
+- Stored as a Base64 data URL for persistence
+- **Clear** button removes the logo from all labels
+
+### 11. QR Code Generation
+
+- Generates an SVG-based visual identifier from one of three sources: **Website URL**, **Batch Number**, or **Custom Text**
+- Uses a 21 × 21 grid with three finder patterns, timing patterns, and deterministic fill (djb2 hash + LCG)
+- Decorative / visual identifier — not a scannable QR code
+- Displayed on the label when a source value is present
+
+### 12. Undo / Redo History
+
+| Control | Action |
+|---------|--------|
+| **Ctrl+Z** | Undo last form change |
+| **Ctrl+Y** | Redo previously undone change |
+| **Topbar buttons** | ↩ Undo / ↪ Redo with disabled-state feedback |
+
+- Up to **50 states** stored in memory (`undoStack` / `redoStack`)
+- Deduplicates consecutive identical states
+- History is cleared on form reset
+
+### 13. Live Label Preview
 
 - Real-time preview of a single label card at actual print size (1.5″ × 1.0″)
 - Scalable from 50% to 500% zoom
 - Displays specification chips showing current settings (size, paper, cut style, grid, theme)
 - Label sections: Business Name header → Product Name → Dates → Batch → Website → Company Info → Contact
 
-### 8. A4 Sheet Preview
+### 14. A4 Sheet Preview
 
 - Full A4 page layout showing all labels in a grid
 - Sheet header with metadata (grid dimensions, label count)
@@ -171,7 +237,7 @@ Additional options:
 - Cutting guides rendered according to the selected style
 - Each label on the sheet matches the single preview exactly
 
-### 9. Zoom Controls
+### 15. Zoom Controls
 
 | Control | Action |
 |---------|--------|
@@ -180,7 +246,7 @@ Additional options:
 | **Reset Zoom button** | Resets to 250% (default) |
 | **Ctrl/Cmd + Scroll** | Mouse wheel zoom on the preview area |
 
-### 10. Print Summary Modal
+### 16. Print Summary Modal
 
 A modal dialog showing:
 - **Labels per Sheet** — calculated from columns × rows
@@ -194,7 +260,7 @@ Includes a 4-step printing guide:
 3. Test print on plain paper first
 4. Cut along guide lines with a straight-edge cutter
 
-### 11. Print Functionality
+### 17. Print Functionality
 
 - Automatically switches to the A4 Sheet view before printing
 - Triggers the browser's native print dialog
@@ -203,20 +269,20 @@ Includes a 4-step printing guide:
 - Supports `print-color-adjust: exact` for accurate colour reproduction
 - Uses `page-break-after: always` for multi-sheet support
 
-### 12. Reset Form
+### 18. Reset Form
 
 - Restores all fields to default sample data
 - Resets theme to Navy, cutting guide to Dashed Border, sheets to 1
 - Triggers a toast notification confirming the reset
 
-### 13. Toast Notifications
+### 19. Toast Notifications
 
 - Temporary message pop-ups in the bottom-right corner
 - Three colour variants: default (teal), copper, and red
 - Auto-dismiss after 2.8 seconds
 - Smooth slide-up animation
 
-### 14. Statistics Bar
+### 20. Statistics Bar
 
 A persistent footer bar displaying:
 - Labels per sheet (with live pulse indicator)
@@ -226,10 +292,25 @@ A persistent footer bar displaying:
 - Technical specs (A4 · 1.5″×1″ · 96dpi)
 - Quick access to Print Summary
 
-### 15. Keyboard & Scroll Interactions
+### 21. Keyboard & Scroll Interactions
 
 - **Ctrl/Cmd + Mouse Wheel** on the preview area zooms in/out by 25% steps
+- **Ctrl+Z / Ctrl+Y** for undo/redo
 - All form inputs trigger live updates on every keystroke (`oninput` events)
+
+### 22. Responsive Mobile Layout
+
+- Media queries at **1024 px**, **768 px**, and **480 px** breakpoints
+- Sidebar and preview panels stack vertically on narrow screens
+- Touch-friendly controls and appropriately sized tap targets
+
+### 23. Keyboard Accessibility
+
+- **Skip link** — "Skip to preview" link visible on focus
+- **ARIA landmarks** — `role="banner"`, `role="complementary"`, `role="main"`, `role="status"`
+- **ARIA labels** on interactive elements and colour swatches (`role="radiogroup"`)
+- **`focus-visible`** styles for keyboard navigation
+- **`aria-live="polite"`** on the statistics bar for screen-reader announcements
 
 ---
 
@@ -257,6 +338,34 @@ A persistent footer bar displaying:
 | `closeModal()` | Close print summary modal | — |
 | `doPrint()` | Switch to A4 view and trigger browser print | — |
 | `resetForm()` | Reset all form fields to default sample data | — |
+| `applyCustomTheme()` | Apply custom primary/accent colours from hex inputs | — (reads DOM inputs) |
+| `applyFontFamily(family)` | Set the label font family | `family` — CSS font-family value |
+| `applyFontScale(value)` | Adjust text size scale (70%–130%, snapped to 5%) | `value` — percentage number |
+| `handleLogoUpload(event)` | Validate and process logo image upload (≤200 KB) | `event` — file input change event |
+| `clearLogo()` | Remove uploaded logo and reset preview | — |
+| `updateQRField()` | Show/hide custom QR text field based on source selection | — |
+| `getQRText()` | Get QR code text from selected source (website/batch/custom) | — |
+| `qrSVG(text)` | Generate a decorative QR-style SVG visual identifier | `text` — string to encode |
+| `pushHistory()` | Save current form state to the undo stack | — |
+| `undo()` | Revert to the previous form state | — |
+| `redo()` | Restore a previously undone form state | — |
+| `updateUndoRedoBtns()` | Enable/disable undo/redo buttons based on stack state | — |
+| `getSavedConfigs()` | Retrieve all saved configurations from localStorage | — |
+| `saveConfigsToStorage(configs)` | Persist configurations to localStorage | `configs` — object of configs |
+| `getCurrentConfig()` | Capture all current form values into a config object | — |
+| `applyConfig(config)` | Apply a saved configuration to all form fields | `config` — configuration object |
+| `showConfirm(title, msg, cb)` | Display a confirmation dialog | `title`, `msg` — strings, `cb` — callback |
+| `closeConfirm(result)` | Close confirmation dialog and invoke callback | `result` — boolean |
+| `updateConfigDropdown()` | Populate saved-configurations dropdown | — |
+| `saveConfig()` | Prompt for a name and save current config | — |
+| `loadSelectedConfig()` | Load selected configuration from dropdown | — |
+| `deleteConfig(name)` | Delete a named configuration after confirmation | `name` — config name |
+| `exportConfig()` | Export current configuration as a JSON file download | — |
+| `importConfig()` | Trigger file dialog for importing configuration JSON | — |
+| `handleFileImport(event)` | Parse and apply imported JSON configuration | `event` — file input change event |
+| `autoSave()` | Save current state to localStorage (auto-recovery) | — |
+| `loadAutoSave()` | Load auto-saved state if within 7-day retention | — |
+| `toggleDarkMode()` | Toggle dark mode and persist preference to localStorage | — |
 
 **Global Variables:**
 
@@ -268,6 +377,19 @@ A persistent footer bar displaying:
 | `sheetsCount` | Number | `1` | Number of sheets to print |
 | `activeTheme` | Number | `0` | Index of the currently active theme |
 | `THEMES` | Array | 8 items | Colour theme definitions (name, primary, accent, accentL) |
+| `undoStack` | Array | `[]` | Previous form states for undo (max 50) |
+| `redoStack` | Array | `[]` | Undone states available for redo |
+| `isApplyingHistory` | Boolean | `false` | Guard flag to prevent recursive history saves |
+| `MAX_HISTORY` | Number | `50` | Maximum undo/redo history entries |
+| `fontFamily` | String | `"'IBM Plex Sans', …"` | Current label font family |
+| `fontScale` | Number | `1` | Font size scale multiplier (0.7–1.3) |
+| `logoDataUrl` | String | `''` | Base64 data URL of uploaded logo |
+| `MAX_LOGO_SIZE` | Number | `204800` | Maximum logo file size in bytes (200 KB) |
+| `STORAGE_KEY` | String | `'labelStudioPro_configs'` | localStorage key for saved configurations |
+| `AUTO_SAVE_KEY` | String | `'labelStudioPro_autosave'` | localStorage key for auto-save state |
+| `confirmCallback` | Function \| null | `null` | Callback for confirmation dialog |
+| `_updateTimer` | Number \| undefined | — | setTimeout ID for debounced A4 updates |
+| `autoSaveTimer` | Number \| undefined | — | setTimeout ID for debounced auto-save |
 
 ---
 
@@ -276,10 +398,11 @@ A persistent footer bar displaying:
 | Layer | Technology | Notes |
 |-------|-----------|-------|
 | **Markup** | HTML5 | Semantic elements, forms, meta viewport |
-| **Styling** | CSS3 | Custom properties, Flexbox, Grid, animations, `@media print` |
+| **Styling** | CSS3 | Custom properties, Flexbox, Grid, animations, `@media print`, responsive media queries, `containment` hints |
 | **Logic** | Vanilla JavaScript (ES6+) | No frameworks or libraries |
 | **Fonts** | Google Fonts | Playfair Display, IBM Plex Sans, IBM Plex Mono |
 | **Icons** | Unicode Emoji | No icon library dependency |
+| **Storage** | Web Storage API | localStorage for preferences, configs, and auto-save |
 
 ---
 
@@ -291,10 +414,10 @@ LabelsStudioPro/
 └── README.md           # This documentation file
 ```
 
-The entire application is contained in a single `index.html` file (~56 KB, ~1356 lines):
-- **Lines 1–731:** `<head>` with embedded CSS (~900 lines covering reset, layout, components, print styles, animations)
-- **Lines 732–1120:** `<body>` HTML markup (topbar, sidebar form, preview panels, modal, toast)
-- **Lines 1125–1354:** `<script>` with all JavaScript logic (17 functions, 5 global variables)
+The entire application is contained in a single `index.html` file (~92 KB, ~2400 lines):
+- **Lines 1–961:** `<head>` with embedded CSS (~950 lines covering reset, layout, dark mode, components, print styles, animations, responsive breakpoints)
+- **Lines 963–1472:** `<body>` HTML markup (skip link, topbar, sidebar form, preview panels, modals, toast, hidden inputs)
+- **Lines 1477–2391:** `<script>` with all JavaScript logic (~45 functions, ~20 global variables, undo/redo, config management, auto-save)
 
 ---
 
@@ -314,13 +437,13 @@ Label Studio Pro works with any static file hosting. No build step required.
 
 ### Short-term Improvements
 
-- [ ] **Custom colour picker** — allow users to define custom theme colours beyond the 8 presets using a colour picker input
-- [ ] **Image/logo upload** — support uploading a brand logo to display on each label
-- [ ] **QR code generation** — auto-generate QR codes from the website URL or batch code for traceability
+- [x] **Custom colour picker** — allow users to define custom theme colours beyond the 8 presets using a colour picker input
+- [x] **Image/logo upload** — support uploading a brand logo to display on each label
+- [x] **QR code generation** — auto-generate QR codes from the website URL or batch code for traceability
 - [ ] **Barcode support** — generate and embed barcodes (Code128, EAN-13) on labels
-- [ ] **Save/load configurations** — persist label configurations to `localStorage` or export/import as JSON files
-- [ ] **Undo/redo** — implement undo/redo history for form changes
-- [ ] **Dark mode** — add a dark mode toggle for the application UI
+- [x] **Save/load configurations** — persist label configurations to `localStorage` or export/import as JSON files
+- [x] **Undo/redo** — implement undo/redo history for form changes
+- [x] **Dark mode** — add a dark mode toggle for the application UI
 
 ### Medium-term Features
 
@@ -329,9 +452,9 @@ Label Studio Pro works with any static file hosting. No build step required.
 - [ ] **Multi-product sheets** — support mixing different products on a single sheet
 - [ ] **PDF export** — generate print-ready PDF files directly (using libraries like jsPDF or html2pdf)
 - [ ] **Drag-and-drop label editor** — allow repositioning label fields via drag and drop
-- [ ] **Font customisation** — let users choose from additional fonts for label text
-- [ ] **Ingredient list field** — add a dedicated field for nutritional or ingredient information
-- [ ] **Responsive mobile layout** — optimise the sidebar and preview panels for mobile and tablet screens
+- [x] **Font customisation** — let users choose from additional fonts for label text
+- [x] **Ingredient list field** — add a dedicated field for nutritional or ingredient information
+- [x] **Responsive mobile layout** — optimise the sidebar and preview panels for mobile and tablet screens
 
 ### Long-term Vision
 
